@@ -44,6 +44,8 @@ entities = [
     { name = "Pan Yinhu", slug = "yinhu", description = "Pan Yinhu is a playable Agent in Zenless Zone Zero, and a member of Yunkui Summit.", details = '{"rank": "A", "attribute": "Physical", "specialty": "Defense", "type": ["Strike"]}', base_image = "yinhu_base.jpg" },
     { name = "Ukinami Yuzuha", slug = "yuzuha", description = "Ukinami Yuzuha is a playable Agent in Zenless Zone Zero, and a member of the Spook Shack.", details = '{"rank": "S", "attribute": "Physical", "specialty": "Support", "type": [""]}', base_image = "yuzuha_base.jpg" },
     { name = "Alice Thymefield", slug = "alice", description = "Alice Thymefield is a playable Agent in Zenless Zone Zero, and a member of the Spook Shack.", details = '{"rank": "S", "attribute": "Physical", "specialty": "Anomaly", "type": [""]}', base_image = "alice_base.jpg" },
+    { name = "Seed", slug = "seed", description = "Seed is a playable Agent in Zenless Zone Zero, and a member of the Obol Squad.", details = '{"rank": "S", "attribute": "Electric", "specialty": "Attack", "type": ["Strike"]}', base_image = "seed_base.jpg" },
+    { name = "Orphie Magnusson & Magus", slug = "orphie", description = "Orphie Magnusson & Magus are playable Agents in Zenless Zone Zero, with Magus being the captain of the Obol Squad and Orphie being an underling.", details = '{"rank": "S", "attribute": "Fire", "specialty": "Attack", "type": [""]}', base_image = "orphie_base.jpg" },
 ]
 
 # ===================
