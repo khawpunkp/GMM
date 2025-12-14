@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "GMM",
-    "version": "3.0.3"
+    "version": "3.0.4"
   },
   "tauri": {
     "allowlist": {
@@ -23,10 +23,23 @@
         "open": true,
         "execute": true,
         "scope": [
-          { "name": "execute-any-file", "cmd": "{0}", "args": [], "sidecar": false },
-          { "name": "open-explorer-windows", "cmd": "explorer", "args": ["{0}"] },
+          {
+            "name": "execute-any-file",
+            "cmd": "{0}",
+            "args": [],
+            "sidecar": false
+          },
+          {
+            "name": "open-explorer-windows",
+            "cmd": "explorer",
+            "args": ["{0}"]
+          },
           { "name": "open-finder-macos", "cmd": "open", "args": ["{0}"] },
-          { "name": "open-filemanager-linux", "cmd": "xdg-open", "args": ["{0}"] }
+          {
+            "name": "open-filemanager-linux",
+            "cmd": "xdg-open",
+            "args": ["{0}"]
+          }
         ]
       },
       "window": { "all": true },
@@ -48,13 +61,11 @@
         "icons/icon.ico"
       ],
       "targets": ["msi", "updater"],
-      "resources": [
-         "definitions/"
-       ],
+      "resources": ["definitions/"],
       "windows": {
-         "certificateThumbprint": null,
-         "digestAlgorithm": "sha256",
-         "timestampUrl": ""
+        "certificateThumbprint": null,
+        "digestAlgorithm": "sha256",
+        "timestampUrl": ""
       }
     },
     "security": {
@@ -80,9 +91,7 @@
       "active": true,
       "dialog": true,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDJGMjc5ODQ0RjEwQTJBODkKUldTSktncnhSSmduTDYxbDM2OFp6NWFvUGlHTjhNWWp6bTU1dGdCS1hucnF4YkMySGwvL0FQSmgK",
-      "endpoints": [
-        "https://eidenz.github.io/gmm-updates/latest.json"
-      ]
+      "endpoints": ["https://eidenz.github.io/gmm-updates/latest.json"]
     }
   }
 }
