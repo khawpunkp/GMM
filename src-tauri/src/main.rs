@@ -1334,14 +1334,14 @@ fn initialize_database(app_handle: &AppHandle, active_game_slug: &str) -> Result
     if !definitions.is_empty() {
          for (category_slug, category_def) in definitions.iter() {
              // Wrap inserts in transaction for potential rollback if needed later
-             conn.execute( "INSERT OR IGNORE INTO categories (name, slug) VALUES (?1, ?2)", params![category_def.name, category_slug],)?;
+             conn.execute( "INSERT OR REPLACE INTO categories (name, slug) VALUES (?1, ?2)", params![category_def.name, category_slug],)?;
              let category_id: i64 = conn.query_row( "SELECT id FROM categories WHERE slug = ?1", params![category_slug], |row| row.get(0), )?;
 
              let other_slug = format!("{}{}", category_slug, OTHER_ENTITY_SUFFIX);
-             conn.execute( "INSERT OR IGNORE INTO entities (category_id, name, slug, description, details, base_image) VALUES (?1, ?2, ?3, ?4, ?5, ?6)", params![ category_id, OTHER_ENTITY_NAME, other_slug, "Uncategorized assets.", "{}", None::<String> ] )?;
+             conn.execute( "INSERT OR REPLACE INTO entities (category_id, name, slug, description, details, base_image) VALUES (?1, ?2, ?3, ?4, ?5, ?6)", params![ category_id, OTHER_ENTITY_NAME, other_slug, "Uncategorized assets.", "{}", None::<String> ] )?;
 
              for entity_def in category_def.entities.iter() {
-                 conn.execute( "INSERT OR IGNORE INTO entities (category_id, name, slug, description, details, base_image) VALUES (?1, ?2, ?3, ?4, ?5, ?6)", params![ category_id, entity_def.name, entity_def.slug, entity_def.description, entity_def.details.as_ref().map(|s| s.to_string()).unwrap_or("{}".to_string()), entity_def.base_image, ] )?;
+                 conn.execute( "INSERT OR REPLACE INTO entities (category_id, name, slug, description, details, base_image) VALUES (?1, ?2, ?3, ?4, ?5, ?6)", params![ category_id, entity_def.name, entity_def.slug, entity_def.description, entity_def.details.as_ref().map(|s| s.to_string()).unwrap_or("{}".to_string()), entity_def.base_image, ] )?;
              }
          }
          println!("Populated database with definitions for '{}'.", active_game_slug);
