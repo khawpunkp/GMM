@@ -1281,6 +1281,59 @@ fn initialize_database(app_handle: &AppHandle, active_game_slug: &str) -> Result
             params![DB_INTERNAL_GAME_SLUG_KEY, active_game_slug],
         )?;
 
+        // --- Load Definitions ---
+        let definition_resource_path = format!("definitions/{}.toml", active_game_slug);
+        println!("Attempting to load definitions from resource: {}", definition_resource_path);
+
+        let definitions: Definitions = match app_handle.path_resolver().resolve_resource(&definition_resource_path) {
+            Some(path) => {
+                println!("Found definition file at: {}", path.display());
+                match fs::read_to_string(&path) {
+                    Ok(toml_content) => {
+                        match toml::from_str(&toml_content) {
+                            Ok(defs) => {
+                                println!("Successfully parsed definitions for '{}'.", active_game_slug);
+                                defs
+                            },
+                            Err(e) => {
+                                eprintln!("ERROR: Failed to parse TOML from {}: {}. Using empty definitions.", path.display(), e);
+                                HashMap::new() // Use empty definitions on parse error
+                            }
+                        }
+                    },
+                    Err(e) => {
+                        eprintln!("ERROR: Failed to read definition file {}: {}. Using empty definitions.", path.display(), e);
+                        HashMap::new() // Use empty definitions on read error
+                    }
+                }
+            },
+            None => {
+                eprintln!("ERROR: Definition file resource '{}' not found. Using empty definitions.", definition_resource_path);
+                HashMap::new() // Use empty definitions if file not found
+            }
+        };
+
+        println!("Loaded {} categories from definitions for '{}'.", definitions.len(), active_game_slug);
+
+        // --- Populate DB from loaded definitions (Same logic as before) ---
+        if !definitions.is_empty() {
+            for (category_slug, category_def) in definitions.iter() {
+                // Wrap inserts in transaction for potential rollback if needed later
+                conn.execute( "INSERT OR REPLACE INTO categories (name, slug) VALUES (?1, ?2)", params![category_def.name, category_slug],)?;
+                let category_id: i64 = conn.query_row( "SELECT id FROM categories WHERE slug = ?1", params![category_slug], |row| row.get(0), )?;
+
+                let other_slug = format!("{}{}", category_slug, OTHER_ENTITY_SUFFIX);
+                conn.execute( "INSERT OR REPLACE INTO entities (category_id, name, slug, description, details, base_image) VALUES (?1, ?2, ?3, ?4, ?5, ?6)", params![ category_id, OTHER_ENTITY_NAME, other_slug, "Uncategorized assets.", "{}", None::<String> ] )?;
+
+                for entity_def in category_def.entities.iter() {
+                    conn.execute( "INSERT OR REPLACE INTO entities (category_id, name, slug, description, details, base_image) VALUES (?1, ?2, ?3, ?4, ?5, ?6)", params![ category_id, entity_def.name, entity_def.slug, entity_def.description, entity_def.details.as_ref().map(|s| s.to_string()).unwrap_or("{}".to_string()), entity_def.base_image, ] )?;
+                }
+            }
+            println!("Populated database with definitions for '{}'.", active_game_slug);
+        } else {
+            println!("Skipping definition population as no definitions were loaded for '{}'.", active_game_slug);
+        }
+
     } else {
         println!("Database file {} already exists.", db_path.display());
         // Optional: Verify internal slug matches expected active_game_slug?
@@ -1293,60 +1346,6 @@ fn initialize_database(app_handle: &AppHandle, active_game_slug: &str) -> Result
             _ => {} // Slug matches or doesn't exist (old DB?)
         }
     }
-
-    // --- Load Definitions ---
-    let definition_resource_path = format!("definitions/{}.toml", active_game_slug);
-    println!("Attempting to load definitions from resource: {}", definition_resource_path);
-
-    let definitions: Definitions = match app_handle.path_resolver().resolve_resource(&definition_resource_path) {
-        Some(path) => {
-            println!("Found definition file at: {}", path.display());
-            match fs::read_to_string(&path) {
-                Ok(toml_content) => {
-                    match toml::from_str(&toml_content) {
-                        Ok(defs) => {
-                            println!("Successfully parsed definitions for '{}'.", active_game_slug);
-                            defs
-                        },
-                        Err(e) => {
-                            eprintln!("ERROR: Failed to parse TOML from {}: {}. Using empty definitions.", path.display(), e);
-                            HashMap::new() // Use empty definitions on parse error
-                        }
-                    }
-                },
-                Err(e) => {
-                    eprintln!("ERROR: Failed to read definition file {}: {}. Using empty definitions.", path.display(), e);
-                    HashMap::new() // Use empty definitions on read error
-                }
-            }
-        },
-        None => {
-            eprintln!("ERROR: Definition file resource '{}' not found. Using empty definitions.", definition_resource_path);
-            HashMap::new() // Use empty definitions if file not found
-        }
-    };
-
-    println!("Loaded {} categories from definitions for '{}'.", definitions.len(), active_game_slug);
-
-    // --- Populate DB from loaded definitions (Same logic as before) ---
-    if !definitions.is_empty() {
-         for (category_slug, category_def) in definitions.iter() {
-             // Wrap inserts in transaction for potential rollback if needed later
-             conn.execute( "INSERT OR REPLACE INTO categories (name, slug) VALUES (?1, ?2)", params![category_def.name, category_slug],)?;
-             let category_id: i64 = conn.query_row( "SELECT id FROM categories WHERE slug = ?1", params![category_slug], |row| row.get(0), )?;
-
-             let other_slug = format!("{}{}", category_slug, OTHER_ENTITY_SUFFIX);
-             conn.execute( "INSERT OR REPLACE INTO entities (category_id, name, slug, description, details, base_image) VALUES (?1, ?2, ?3, ?4, ?5, ?6)", params![ category_id, OTHER_ENTITY_NAME, other_slug, "Uncategorized assets.", "{}", None::<String> ] )?;
-
-             for entity_def in category_def.entities.iter() {
-                 conn.execute( "INSERT OR REPLACE INTO entities (category_id, name, slug, description, details, base_image) VALUES (?1, ?2, ?3, ?4, ?5, ?6)", params![ category_id, entity_def.name, entity_def.slug, entity_def.description, entity_def.details.as_ref().map(|s| s.to_string()).unwrap_or("{}".to_string()), entity_def.base_image, ] )?;
-             }
-         }
-         println!("Populated database with definitions for '{}'.", active_game_slug);
-    } else {
-         println!("Skipping definition population as no definitions were loaded for '{}'.", active_game_slug);
-    }
-    // --- End Definition Population ---
     
     Ok(conn)
 }
