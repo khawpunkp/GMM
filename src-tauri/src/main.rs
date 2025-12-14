@@ -643,29 +643,29 @@ fn find_entity_slug_from_hint(hint: &str, maps: &DeductionMaps) -> Option<String
     // }
 
 
-    // Priority 11: Known full name CONTAINS cleaned hint (if hint is reasonably long)
+    // Priority 11: Cleaned hint CONTAINS known full name (if hint is reasonably long)
      if cleaned_hint.len() > 3 {
          for (entity_name_lower, entity_slug) in &maps.lowercase_entity_name_to_slug {
-             if entity_name_lower.contains(&cleaned_hint) {
-                  println!("[find_entity_slug]   -> Match via P11: known name contains cleaned hint.");
+             if cleaned_hint.contains(entity_name_lower) {
+                  println!("[find_entity_slug]   -> Match via P11: cleaned hint contains known full name ('{}').", entity_name_lower);
                  return Some(entity_slug.clone());
              }
          }
      }
-     // Priority 12: Known first two words CONTAINS cleaned hint
+     // Priority 12: Cleaned hint CONTAINS known first two words
       if cleaned_hint.len() > 3 {
          for (entity_name_first_two, entity_slug) in &maps.lowercase_entity_first_two_words_to_slug {
-             if entity_name_first_two.contains(&cleaned_hint) {
-                  println!("[find_entity_slug]   -> Match via P12: known first two words contains cleaned hint.");
+             if cleaned_hint.contains(entity_name_first_two) {
+                  println!("[find_entity_slug]   -> Match via P12: cleaned hint contains known first two words ('{}').", entity_name_first_two);
                  return Some(entity_slug.clone());
              }
          }
       }
-      // Priority 13: Known first name CONTAINS cleaned hint
+      // Priority 13: Cleaned hint CONTAINS known first name
       if cleaned_hint.len() > 2 { // Can be shorter here maybe
          for (entity_name_first, entity_slug) in &maps.lowercase_entity_firstname_to_slug {
-             if entity_name_first.contains(&cleaned_hint) {
-                 println!("[find_entity_slug]   -> Match via P13: known first name contains cleaned hint.");
+             if cleaned_hint.contains(entity_name_first) {
+                 println!("[find_entity_slug]   -> Match via P13: cleaned hint contains known first name ('{}').", entity_name_first);
                  return Some(entity_slug.clone());
              }
          }
@@ -846,26 +846,34 @@ fn deduce_mod_info_v2(
     let mut ini_target_hint: Option<String> = None;
     let mut ini_type_hint: Option<String> = None;
 
-    // --- 1. Check Parent Folders for ENTITY Match ---
-    println!("[Deduce V2] Checking parent folders for ENTITY match...");
-    // ... (existing parent folder checking logic using find_entity_slug_from_hint) ...
-    let mut current_path = mod_folder_path.parent();
-    while let Some(path) = current_path {
-        if path == *base_mods_path || path.parent() == Some(base_mods_path) { break; }
-        if let Some(folder_name) = path.file_name().and_then(|n| n.to_str()) {
-             if let Some(slug) = find_entity_slug_from_hint(folder_name, maps) {
-                 found_entity_slug = Some(slug);
-                 println!("[Deduce V2]   -> Found entity via parent folder: '{}' -> {}", folder_name, found_entity_slug.as_ref().unwrap());
-                 break;
-             }
-        }
-        current_path = path.parent();
+    // --- 1. Try Matching Mod Folder Name (Highest Priority) ---
+    println!("[Deduce V2] P1: Trying mod folder name matching: '{}'", mod_folder_name);
+    if let Some(slug) = find_entity_slug_from_hint(&mod_folder_name, maps) {
+        found_entity_slug = Some(slug);
+        println!("[Deduce V2]   -> Found entity via mod folder name: '{}' -> {}", mod_folder_name, found_entity_slug.as_ref().unwrap());
     }
-    println!("[Deduce V2] Parent folder check done. Found Entity Slug: {:?}", found_entity_slug);
+
+    // --- 2. Check Parent Folders for ENTITY Match ---
+    if found_entity_slug.is_none() {
+        println!("[Deduce V2] P2: Checking parent folders for ENTITY match...");
+        let mut current_path = mod_folder_path.parent();
+        while let Some(path) = current_path {
+            if path == *base_mods_path || path.parent() == Some(base_mods_path) { break; }
+            if let Some(folder_name) = path.file_name().and_then(|n| n.to_str()) {
+                if let Some(slug) = find_entity_slug_from_hint(folder_name, maps) {
+                    found_entity_slug = Some(slug);
+                    println!("[Deduce V2]   -> Found entity via parent folder: '{}' -> {}", folder_name, found_entity_slug.as_ref().unwrap());
+                    break;
+                }
+            }
+            current_path = path.parent();
+        }
+        println!("[Deduce V2] Parent folder check done. Found Entity Slug: {:?}", found_entity_slug);
+    }
 
 
-    // --- 2. Parse INI File (if entity not found yet or for metadata) ---
-    println!("[Deduce V2] Checking INI file...");
+    // --- 3. Parse INI File (if entity not found yet or for metadata) ---
+    println!("[Deduce V2] P3: Checking INI file...");
     let ini_path_option = WalkDir::new(mod_folder_path)
         .max_depth(1).min_depth(1).into_iter()
         .filter_map(|e| e.ok())
@@ -898,10 +906,10 @@ fn deduce_mod_info_v2(
         println!("[Deduce V2] No INI file found in mod folder.");
     }
 
-    // --- 3. Try Matching INI Target Hint (if entity still not found) ---
+    // --- 4. Try Matching INI Target Hint (if entity still not found) ---
     if found_entity_slug.is_none() {
         if let Some(target_hint) = &ini_target_hint {
-            println!("[Deduce V2] Trying INI target hint matching...");
+            println!("[Deduce V2] P4: Trying INI target hint matching...");
             if let Some(slug) = find_entity_slug_from_hint(target_hint, maps) {
                  found_entity_slug = Some(slug);
                  println!("[Deduce V2]   -> Found entity via INI target hint: '{}' -> {}", target_hint, found_entity_slug.as_ref().unwrap());
@@ -909,9 +917,9 @@ fn deduce_mod_info_v2(
         }
     }
 
-    // --- 4. Try Matching Internal Filenames (NEW STEP) ---
+    // --- 5. Try Matching Internal Filenames (NEW STEP) ---
     if found_entity_slug.is_none() {
-        println!("[Deduce V2] Trying internal filename matching...");
+        println!("[Deduce V2] P5: Trying internal filename matching...");
         let mut file_match_found = false;
         // Iterate through files directly inside the mod folder (depth 1)
         for entry_result in WalkDir::new(mod_folder_path).min_depth(1).max_depth(1).into_iter() {
@@ -942,16 +950,6 @@ fn deduce_mod_info_v2(
             println!("[Deduce V2]   -> No entity match found from internal filenames.");
         }
     }
-
-
-    // --- 5. Try Matching Mod Folder Name (Lower Priority) ---
-     if found_entity_slug.is_none() {
-         println!("[Deduce V2] Trying mod folder name matching: '{}'", mod_folder_name);
-         if let Some(slug) = find_entity_slug_from_hint(&mod_folder_name, maps) {
-              found_entity_slug = Some(slug);
-              println!("[Deduce V2]   -> Found entity via mod folder name: '{}' -> {}", mod_folder_name, found_entity_slug.as_ref().unwrap());
-         }
-     }
 
     // --- 6. Final Assignment Logic ---
     println!("[Deduce V2] Final Assignment Logic. Found Entity Slug So Far: {:?}", found_entity_slug);
