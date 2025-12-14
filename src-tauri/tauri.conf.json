@@ -74,7 +74,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "GMM - A Tauri Mod Manager for GIMI",
+        "title": "ZMM - A Tauri Mod Manager",
         "width": 1400,
         "height": 800,
         "minWidth": 900,

@@ -1251,6 +1251,83 @@ fn get_current_asset_enabled_state(conn: &Connection, asset_id: i64, base_mods_p
     Ok(full_path_if_enabled.is_dir()) // Return true if the 'enabled' path exists
 }
 
+// --- Definition Syncing ---
+fn sync_definitions(conn: &mut Connection, app_handle: &AppHandle, active_game_slug: &str) -> Result<(), AppError> {
+    let definition_resource_path = format!("definitions/{}.toml", active_game_slug);
+    println!("Attempting to sync definitions from resource: {}", definition_resource_path);
+
+    let definitions: Definitions = match app_handle.path_resolver().resolve_resource(&definition_resource_path) {
+        Some(path) => {
+            println!("Found definition file at: {}", path.display());
+            match fs::read_to_string(&path) {
+                Ok(toml_content) => {
+                    match toml::from_str(&toml_content) {
+                        Ok(defs) => {
+                            println!("Successfully parsed definitions for '{}'.", active_game_slug);
+                            defs
+                        },
+                        Err(e) => {
+                            eprintln!("ERROR: Failed to parse TOML from {}: {}. Using empty definitions.", path.display(), e);
+                            HashMap::new()
+                        }
+                    }
+                },
+                Err(e) => {
+                    eprintln!("ERROR: Failed to read definition file {}: {}. Using empty definitions.", path.display(), e);
+                    HashMap::new()
+                }
+            }
+        },
+        None => {
+            eprintln!("ERROR: Definition file resource '{}' not found. Using empty definitions.", definition_resource_path);
+            HashMap::new()
+        }
+    };
+
+    if definitions.is_empty() {
+        println!("Skipping definition sync as no definitions were loaded for '{}'.", active_game_slug);
+        return Ok(());
+    }
+
+    println!("Loaded {} categories from definitions for '{}'. Starting sync.", definitions.len(), active_game_slug);
+    
+    let tx = conn.transaction()?;
+
+    for (category_slug, category_def) in definitions.iter() {
+        tx.execute("INSERT OR REPLACE INTO categories (name, slug) VALUES (?1, ?2)", params![category_def.name, category_slug])?;
+        let category_id: i64 = tx.query_row("SELECT id FROM categories WHERE slug = ?1", params![category_slug], |row| row.get(0))?;
+
+        let mut existing_slugs: HashSet<String> = {
+            let mut stmt = tx.prepare("SELECT slug FROM entities WHERE category_id = ?1")?;
+            let slug_iter = stmt.query_map(params![category_id], |row| row.get(0))?;
+            let mut slugs = HashSet::new();
+            for slug_result in slug_iter {
+                slugs.insert(slug_result?);
+            }
+            slugs
+        };
+
+        let other_slug = format!("{}{}", category_slug, OTHER_ENTITY_SUFFIX);
+        tx.execute("INSERT OR REPLACE INTO entities (category_id, name, slug, description, details, base_image) VALUES (?1, ?2, ?3, ?4, ?5, ?6)", params![category_id, OTHER_ENTITY_NAME, other_slug, "Uncategorized assets.", "{}", None::<String>])?;
+        existing_slugs.remove(&other_slug);
+
+        for entity_def in category_def.entities.iter() {
+            tx.execute("INSERT OR REPLACE INTO entities (category_id, name, slug, description, details, base_image) VALUES (?1, ?2, ?3, ?4, ?5, ?6)", params![category_id, entity_def.name, entity_def.slug, entity_def.description, entity_def.details.as_ref().map(|s| s.to_string()).unwrap_or("{}".to_string()), entity_def.base_image])?;
+            existing_slugs.remove(&entity_def.slug);
+        }
+
+        for orphan_slug in existing_slugs {
+            println!("Pruning orphaned entity '{}' from category '{}'", orphan_slug, category_slug);
+            tx.execute("DELETE FROM entities WHERE slug = ?1", params![orphan_slug])?;
+        }
+    }
+
+    tx.commit()?;
+    println!("Successfully synced definitions for '{}'.", active_game_slug);
+
+    Ok(())
+}
+
 // --- Database Initialization (Result type uses AppError internally) ---
 fn initialize_database(app_handle: &AppHandle, active_game_slug: &str) -> Result<Connection, AppError> {
     let data_dir = get_app_data_dir(app_handle)?;
@@ -1258,12 +1335,11 @@ fn initialize_database(app_handle: &AppHandle, active_game_slug: &str) -> Result
     println!("Initializing database for game '{}' at: {}", active_game_slug, db_path.display());
     let needs_schema_setup = !db_path.exists();
 
-    let conn = Connection::open(&db_path)?;
+    let mut conn = Connection::open(&db_path)?;
     conn.execute("PRAGMA foreign_keys = ON;", [])?;
 
     if needs_schema_setup {
         println!("Performing initial schema setup for {}", db_path.display());
-        // --- Create Tables (Same as before) ---
         conn.execute_batch(
             "BEGIN;
              CREATE TABLE categories ( id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE NOT NULL, slug TEXT UNIQUE NOT NULL );
@@ -1280,71 +1356,19 @@ fn initialize_database(app_handle: &AppHandle, active_game_slug: &str) -> Result
             "INSERT OR REPLACE INTO settings (key, value) VALUES (?1, ?2)",
             params![DB_INTERNAL_GAME_SLUG_KEY, active_game_slug],
         )?;
-
-        // --- Load Definitions ---
-        let definition_resource_path = format!("definitions/{}.toml", active_game_slug);
-        println!("Attempting to load definitions from resource: {}", definition_resource_path);
-
-        let definitions: Definitions = match app_handle.path_resolver().resolve_resource(&definition_resource_path) {
-            Some(path) => {
-                println!("Found definition file at: {}", path.display());
-                match fs::read_to_string(&path) {
-                    Ok(toml_content) => {
-                        match toml::from_str(&toml_content) {
-                            Ok(defs) => {
-                                println!("Successfully parsed definitions for '{}'.", active_game_slug);
-                                defs
-                            },
-                            Err(e) => {
-                                eprintln!("ERROR: Failed to parse TOML from {}: {}. Using empty definitions.", path.display(), e);
-                                HashMap::new() // Use empty definitions on parse error
-                            }
-                        }
-                    },
-                    Err(e) => {
-                        eprintln!("ERROR: Failed to read definition file {}: {}. Using empty definitions.", path.display(), e);
-                        HashMap::new() // Use empty definitions on read error
-                    }
-                }
-            },
-            None => {
-                eprintln!("ERROR: Definition file resource '{}' not found. Using empty definitions.", definition_resource_path);
-                HashMap::new() // Use empty definitions if file not found
-            }
-        };
-
-        println!("Loaded {} categories from definitions for '{}'.", definitions.len(), active_game_slug);
-
-        // --- Populate DB from loaded definitions (Same logic as before) ---
-        if !definitions.is_empty() {
-            for (category_slug, category_def) in definitions.iter() {
-                // Wrap inserts in transaction for potential rollback if needed later
-                conn.execute( "INSERT OR REPLACE INTO categories (name, slug) VALUES (?1, ?2)", params![category_def.name, category_slug],)?;
-                let category_id: i64 = conn.query_row( "SELECT id FROM categories WHERE slug = ?1", params![category_slug], |row| row.get(0), )?;
-
-                let other_slug = format!("{}{}", category_slug, OTHER_ENTITY_SUFFIX);
-                conn.execute( "INSERT OR REPLACE INTO entities (category_id, name, slug, description, details, base_image) VALUES (?1, ?2, ?3, ?4, ?5, ?6)", params![ category_id, OTHER_ENTITY_NAME, other_slug, "Uncategorized assets.", "{}", None::<String> ] )?;
-
-                for entity_def in category_def.entities.iter() {
-                    conn.execute( "INSERT OR REPLACE INTO entities (category_id, name, slug, description, details, base_image) VALUES (?1, ?2, ?3, ?4, ?5, ?6)", params![ category_id, entity_def.name, entity_def.slug, entity_def.description, entity_def.details.as_ref().map(|s| s.to_string()).unwrap_or("{}".to_string()), entity_def.base_image, ] )?;
-                }
-            }
-            println!("Populated database with definitions for '{}'.", active_game_slug);
-        } else {
-            println!("Skipping definition population as no definitions were loaded for '{}'.", active_game_slug);
-        }
-
     } else {
         println!("Database file {} already exists.", db_path.display());
-        // Optional: Verify internal slug matches expected active_game_slug?
         match get_internal_db_slug(&db_path) {
             Ok(Some(internal_slug)) if internal_slug != active_game_slug => {
                  eprintln!("WARNING: Existing database {} contains slug '{}' but expected '{}'. Check startup logic.", db_path.display(), internal_slug, active_game_slug);
-                 // We proceed, assuming the startup logic handled the rename correctly.
             },
             Err(e) => eprintln!("Warning: Could not read internal slug from existing DB {}: {}", db_path.display(), e),
-            _ => {} // Slug matches or doesn't exist (old DB?)
+            _ => {}
         }
+    }
+
+    if let Err(e) = sync_definitions(&mut conn, app_handle, active_game_slug) {
+        eprintln!("WARNING: Failed to sync definitions on startup: {}", e);
     }
     
     Ok(conn)
