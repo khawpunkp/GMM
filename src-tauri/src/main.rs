@@ -94,6 +94,7 @@ type Definitions = HashMap<String, CategoryDefinition>;
 
 // --- Constants for Settings Keys ---
 const SETTINGS_KEY_MODS_FOLDER: &str = "mods_folder_path";
+const SETTINGS_KEY_APP_VERSION: &str = "app_version";
 const OTHER_ENTITY_SUFFIX: &str = "-other";
 const OTHER_ENTITY_NAME: &str = "Other/Unknown";
 const DB_NAME: &str = "app_data.sqlite";
@@ -1367,8 +1368,44 @@ fn initialize_database(app_handle: &AppHandle, active_game_slug: &str) -> Result
         }
     }
 
-    if let Err(e) = sync_definitions(&mut conn, app_handle, active_game_slug) {
-        eprintln!("WARNING: Failed to sync definitions on startup: {}", e);
+    // --- Version-based Definition Syncing ---
+    let current_app_version = app_handle.package_info().version.to_string();
+    let stored_app_version_res = get_setting_value(&conn, SETTINGS_KEY_APP_VERSION);
+
+    let should_sync = if needs_schema_setup {
+        println!("[Version Sync] New database, forcing definition sync.");
+        true
+    } else {
+        match stored_app_version_res {
+            Ok(Some(stored_version)) => {
+                if stored_version != current_app_version {
+                    println!("[Version Sync] App version changed from '{}' to '{}', forcing sync.", stored_version, current_app_version);
+                    true
+                } else {
+                    println!("[Version Sync] App version '{}' matches stored version. Skipping sync.", current_app_version);
+                    false
+                }
+            },
+            Ok(None) => {
+                println!("[Version Sync] No stored version found, forcing sync.");
+                true
+            },
+            Err(e) => {
+                eprintln!("[Version Sync] Error reading stored version: {}. Forcing sync as a precaution.", e);
+                true
+            }
+        }
+    };
+
+    if should_sync {
+        if let Err(e) = sync_definitions(&mut conn, app_handle, active_game_slug) {
+            eprintln!("WARNING: Failed to sync definitions: {}. Version will not be updated, will retry on next launch.", e);
+        } else {
+            println!("[Version Sync] Sync successful. Updating stored version to '{}'.", current_app_version);
+            if let Err(e) = conn.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?1, ?2)", params![SETTINGS_KEY_APP_VERSION, current_app_version]) {
+                eprintln!("CRITICAL: Failed to update app version in settings after sync: {}", e);
+            }
+        }
     }
     
     Ok(conn)
