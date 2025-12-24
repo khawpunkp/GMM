@@ -52,7 +52,7 @@
     },
     "bundle": {
       "active": true,
-      "identifier": "GenshinModManager",
+      "identifier": "ZenlessModManager",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
@@ -74,7 +74,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "ZMM - A Tauri Mod Manager",
+        "title": "ZMM - Zenless Zone Zero Mod Manager",
         "width": 1400,
         "height": 800,
         "minWidth": 900,

@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+@theme {
+  --color-main-yellow: #dfd300;
+  --color-main-dark: #080808;
+  --color-main-gray: #333336;
+  --color-error: #fe0000;
+}
+
+@font-face {
+  font-family: "inpin hongmengti";
+  src: url("./assets/fonts/ZZZ.ttf") format("truetype");
+  font-display: swap;
+}
+
+/* Base styles */
+* {
+  font-family: "inpin hongmengti", sans-serif;
+  scrollbar-width: auto !important;
+}
+
+*::-webkit-scrollbar {
+  display: initial !important;
+  width: 4px;
+}
+*::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: #dfd300;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  text-decoration: none;
+  gap: 8px;
+  white-space: nowrap;
+  height: 40px;
+}
+
+.btn-primary {
+  background-color: #dfd300;
+  color: #080808;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: #dfd300;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-outline:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.loader {
+  border: 5px solid #fff;
+  border-bottom-color: #dfd300;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: loader-rotation 1s linear infinite;
+}
+
+@keyframes loader-rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

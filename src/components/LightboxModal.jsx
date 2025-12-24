@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import ReactDOM from 'react-dom';
-import { X } from 'lucide-react';
-import '../styles/LightboxModal.css';
+import React, { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
+import "../styles/LightboxModal.css";
+import { XIcon } from "@phosphor-icons/react";
 
 function LightboxModal({ imageUrl, isOpen, onClose }) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  
+
   useEffect(() => {
     if (isOpen) {
       setIsVisible(true);
@@ -17,7 +17,7 @@ function LightboxModal({ imageUrl, isOpen, onClose }) {
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
-  
+
   if (!isVisible || !imageUrl) return null;
 
   const handleBackdropClick = (e) => {
@@ -27,29 +27,25 @@ function LightboxModal({ imageUrl, isOpen, onClose }) {
   };
 
   return ReactDOM.createPortal(
-    <div 
-      className={`lightbox-backdrop ${isAnimating ? 'active' : ''}`} 
+    <div
+      className={`lightbox-backdrop ${isAnimating ? "active" : ""}`}
       onClick={handleBackdropClick}
     >
-      <div className={`lightbox-content ${isAnimating ? 'active' : ''}`}>
-        <button 
-          className="lightbox-close" 
-          onClick={onClose} 
-          aria-label="Close"
-        >
+      <div className={`lightbox-content ${isAnimating ? "active" : ""}`}>
+        <button className="lightbox-close" onClick={onClose} aria-label="Close">
           <span className="close-icon">
-            <X size={20} />
+            <XIcon size={20} />
           </span>
           <span className="close-text">Close</span>
         </button>
         <div className="lightbox-image-container">
-          <img 
-            src={imageUrl} 
-            alt="Enlarged preview" 
-            className={`lightbox-image ${isAnimating ? 'active' : ''}`} 
+          <img
+            src={imageUrl}
+            alt="Enlarged preview"
+            className={`lightbox-image ${isAnimating ? "active" : ""}`}
           />
         </div>
-        
+
         <div className="lightbox-controls">
           <div className="lightbox-counter">
             {/* Optional: Add image counter here if you have multiple images */}

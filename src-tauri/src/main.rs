@@ -143,7 +143,6 @@ struct ScanProgress {
 
 const APP_CONFIG_FILENAME: &str = "app_config.json";
 const DEFAULT_GAME_SLUG: &str = "genshin";
-const PREDEFINED_GAMES: [&str; 3] = ["genshin", "wuwa", "zzz"];
 const DB_INTERNAL_GAME_SLUG_KEY: &str = "database_game_slug";
 const DB_FILENAME_PREFIX: &str = "app_data_"; // Prefix for archived game dbs
 const ACTIVE_DB_FILENAME: &str = "app_data.sqlite";
@@ -4535,46 +4534,6 @@ fn add_asset_to_presets(asset_id: i64, preset_ids: Vec<i64>, db_state: State<DbS
 }
 
 #[command]
-fn get_available_games(app_handle: AppHandle) -> CmdResult<Vec<String>> {
-    let data_dir = get_app_data_dir(&app_handle).map_err(|e| e.to_string())?;
-
-    let mut games: HashSet<String> = PREDEFINED_GAMES.iter().map(|&s| s.to_string()).collect();
-
-    if data_dir.is_dir() {
-        match fs::read_dir(data_dir) {
-            Ok(entries) => {
-                for entry_result in entries {
-                    if let Ok(entry) = entry_result {
-                        let path = entry.path();
-                        if path.is_file() {
-                             if let Some(filename_str) = path.file_name().and_then(|n| n.to_str()) {
-                                // Check for archived DB files (e.g., app_data_genshin.sqlite)
-                                if filename_str.starts_with(DB_FILENAME_PREFIX) && filename_str.ends_with(".sqlite") {
-                                    let game_slug = filename_str
-                                        .trim_start_matches(DB_FILENAME_PREFIX)
-                                        .trim_end_matches(".sqlite");
-                                    if !game_slug.is_empty() {
-                                        games.insert(game_slug.to_string()); // Add discovered games
-                                    }
-                                }
-                             }
-                        }
-                    }
-                }
-            }
-            Err(e) => {
-                eprintln!("Warning: Could not read app data directory to find existing game DBs: {}", e);
-            }
-        }
-    }
-
-    let mut sorted_games: Vec<String> = games.into_iter().collect();
-    sorted_games.sort(); // Sort alphabetically
-    println!("Available games: {:?}", sorted_games); // Log the final list
-    Ok(sorted_games)
-}
-
-#[command]
 fn get_active_game(app_handle: AppHandle) -> CmdResult<String> {
     read_app_config(&app_handle)
         .map(|config| config.requested_active_game) // Return the requested game
@@ -4857,8 +4816,7 @@ fn main() {
             get_dashboard_stats, get_app_version,
             // Keybinds
             get_ini_keybinds, open_asset_folder,
-            // Multi-Game Commands
-            get_available_games, get_active_game, switch_game,
+            
             exit_app
         ])
         .run(context) // Runs the Tauri application loop.

@@ -43,7 +43,7 @@ GMM aims to simplify the process of installing, organizing, and switching betwee
 ## 💾 Installation
 
 1.  **Download:** Go to the [**Latest Release**](https://github.com/Eidenz/gmm-updates/releases/latest) page.
-2.  **Installer:** Download the `.msi` installer file (e.g., `GenshinModManager_X.Y.Z_x64_en-US.msi`).
+2.  **Installer:** Download the `.msi` installer file (e.g., `ZMM_X.Y.Z_x64_en-US.msi`).
 3.  **Run:** Execute the downloaded `.msi` file and follow the installation prompts.
 4.  **Updates:** The application has a built-in updater and will notify you when a new version is available.
 

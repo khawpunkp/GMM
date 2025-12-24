@@ -38,12 +38,15 @@
   --wuwa-spectro: #bba81e;
 }
 
+@font-face {
+  font-family: "inpin hongmengti";
+  src: url("../assets/fonts/ZZZ.ttf") format("truetype");
+  font-display: swap;
+}
+
 /* Base styles */
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "inpin hongmengti", sans-serif;
 }
 
 html,
@@ -1341,15 +1344,6 @@ input:disabled + .slider {
   /* Space for scrollbar if it appears */
   margin-bottom: 15px;
   /* Space before footer */
-}
-
-/* Sidebar Drag Feedback */
-.sidebar.dragging-over {
-  outline: 3px dashed var(--primary);
-  outline-offset: -4px;
-  /* Inside the element */
-  background-color: rgba(156, 136, 255, 0.05);
-  /* Subtle background change */
 }
 
 /* Enhanced Entity Page Styles */
