@@ -84,6 +84,7 @@ const rankIconsSrc = {
 
 const attributeIconsSrc = {
   Physical: "/images/filters/zzz/phisical.webp",
+  HonedEdge: "/images/filters/zzz/honed-edge.webp",
   Fire: "/images/filters/zzz/fire.webp",
   Ice: "/images/filters/zzz/ice.webp",
   Frost: "/images/filters/zzz/frost.webp",

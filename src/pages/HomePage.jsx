@@ -59,6 +59,11 @@ const attributes = [
     icon: "/images/filters/zzz/phisical.webp",
   },
   {
+    key: "HonedEdge",
+    name: "Honed Edge",
+    icon: "/images/filters/zzz/honed-edge.webp",
+  },
+  {
     key: "Fire",
     name: "Fire",
     icon: "/images/filters/zzz/fire.webp",
@@ -365,7 +370,6 @@ function HomePage() {
           return a.name.localeCompare(b.name); // Fallback to name ascending
       }
     });
-
     return tempEntities;
   }, [
     entitiesWithCounts,
