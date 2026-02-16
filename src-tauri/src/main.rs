@@ -1295,7 +1295,8 @@ fn sync_definitions(conn: &mut Connection, app_handle: &AppHandle, active_game_s
     let tx = conn.transaction()?;
 
     for (category_slug, category_def) in definitions.iter() {
-        tx.execute("INSERT OR REPLACE INTO categories (name, slug) VALUES (?1, ?2)", params![category_def.name, category_slug])?;
+        // Use UPSERT to avoid deleting and re-inserting categories, which preserves the ID
+        tx.execute("INSERT INTO categories (name, slug) VALUES (?1, ?2) ON CONFLICT(slug) DO UPDATE SET name=excluded.name", params![category_def.name, category_slug])?;
         let category_id: i64 = tx.query_row("SELECT id FROM categories WHERE slug = ?1", params![category_slug], |row| row.get(0))?;
 
         let mut existing_slugs: HashSet<String> = {
@@ -1309,17 +1310,37 @@ fn sync_definitions(conn: &mut Connection, app_handle: &AppHandle, active_game_s
         };
 
         let other_slug = format!("{}{}", category_slug, OTHER_ENTITY_SUFFIX);
-        tx.execute("INSERT OR REPLACE INTO entities (category_id, name, slug, description, details, base_image) VALUES (?1, ?2, ?3, ?4, ?5, ?6)", params![category_id, OTHER_ENTITY_NAME, other_slug, "Uncategorized assets.", "{}", None::<String>])?;
+        // Use UPSERT for the 'other' entity as well
+        tx.execute(
+            "INSERT INTO entities (category_id, name, slug, description, details, base_image) VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+             ON CONFLICT(slug) DO UPDATE SET category_id=excluded.category_id, name=excluded.name, description=excluded.description, details=excluded.details, base_image=excluded.base_image",
+            params![category_id, OTHER_ENTITY_NAME, other_slug, "Uncategorized assets.", "{}", None::<String>],
+        )?;
         existing_slugs.remove(&other_slug);
 
         for entity_def in category_def.entities.iter() {
-            tx.execute("INSERT OR REPLACE INTO entities (category_id, name, slug, description, details, base_image) VALUES (?1, ?2, ?3, ?4, ?5, ?6)", params![category_id, entity_def.name, entity_def.slug, entity_def.description, entity_def.details.as_ref().map(|s| s.to_string()).unwrap_or("{}".to_string()), entity_def.base_image])?;
+            // Use UPSERT for entities to preserve IDs
+            tx.execute(
+                "INSERT INTO entities (category_id, name, slug, description, details, base_image) VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+                 ON CONFLICT(slug) DO UPDATE SET category_id=excluded.category_id, name=excluded.name, description=excluded.description, details=excluded.details, base_image=excluded.base_image",
+                params![category_id, entity_def.name, entity_def.slug, entity_def.description, entity_def.details.as_ref().map(|s| s.to_string()).unwrap_or("{}".to_string()), entity_def.base_image],
+            )?;
             existing_slugs.remove(&entity_def.slug);
         }
 
         for orphan_slug in existing_slugs {
-            println!("Pruning orphaned entity '{}' from category '{}'", orphan_slug, category_slug);
-            tx.execute("DELETE FROM entities WHERE slug = ?1", params![orphan_slug])?;
+            let has_assets: bool = tx.query_row(
+                "SELECT EXISTS(SELECT 1 FROM assets a JOIN entities e ON a.entity_id = e.id WHERE e.slug = ?1)",
+                params![orphan_slug],
+                |row| row.get(0),
+            )?;
+
+            if has_assets {
+                println!("Skipping prune for orphaned entity '{}' from category '{}' because it has mods.", orphan_slug, category_slug);
+            } else {
+                println!("Pruning orphaned entity '{}' from category '{}'", orphan_slug, category_slug);
+                tx.execute("DELETE FROM entities WHERE slug = ?1", params![orphan_slug])?;
+            }
         }
     }
 

@@ -39,7 +39,7 @@ entities = [
     { name = "Zhu Yuan", slug = "zhu", description = "Zhu Yuan is the Leader of the Criminal Investigation Special Response Team.", details = '{"rank": "S", "attribute": "Ether", "speciality": "Attack", "type": ["Pierce"]}', base_image = "zhu_base.jpg" },
     { name = "Vivian", slug = "vivian", description = "Vivian Banshee is a member of Mockingbird.", details = '{"rank": "S", "attribute": "Ether", "speciality": "Anomaly", "type": ["Slash"]}', base_image = "vivian_base.jpg" },
     { name = "Hugo", slug = "hugo", description = "Hugo Vlad is a member of Mockingbird.", details = '{"rank": "S", "attribute": "Ice", "speciality": "Attack", "type": ["Slash"]}', base_image = "hugo_base.jpg" },
-    { name = "Ju Fufu", slug = "jufufu", description = "Ju Fufu is a member of Yunkui Summit.", details = '{"rank": "S", "attribute": "Fire", "speciality": "Stun", "type": [""]}', base_image = "jufufu_base.jpg" },
+    { name = "Ju Fufu", slug = "fufu", description = "Ju Fufu is a member of Yunkui Summit.", details = '{"rank": "S", "attribute": "Fire", "speciality": "Stun", "type": [""]}', base_image = "jufufu_base.jpg" },
     { name = "Yixuan", slug = "yixuan", description = "Yixuan is the High Preceptor of Yunkui Summit.", details = '{"rank": "S", "attribute": "AuricInk", "speciality": "Rupture", "type": ["Strike"]}', base_image = "yixuan_base.jpg" },
     { name = "Pan Yinhu", slug = "pan", description = "Pan Yinhu is a member of Yunkui Summit.", details = '{"rank": "A", "attribute": "Physical", "speciality": "Defense", "type": ["Strike"]}', base_image = "pan_base.jpg" },
     { name = "Yuzuha", slug = "yuzuha", description = "Ukinami Yuzuha is a member of the Spook Shack.", details = '{"rank": "S", "attribute": "Physical", "speciality": "Support", "type": [""]}', base_image = "yuzuha_base.jpg" },
@@ -51,6 +51,8 @@ entities = [
     { name = "Yidhari", slug = "yidhari", description = "Yidhari Murphy is a member of the Spook Shack.", details = '{"rank": "S", "attribute": "Ice", "speciality": "Rupture", "type": ["Strike"]}', base_image = "yidhari_base.jpg" },
     { name = "Dialyn", slug = "dialyn", description = "Dialyn is a customer service representative of TOPS and Judge of the Krampus Compliance Authority.", details = '{"rank": "S", "attribute": "Physical", "speciality": "Stun", "type": ["Slash"]}', base_image = "dialyn_base.jpg" },
     { name = "Banyue", slug = "banyue", description = "Banyue is a member of the Krampus Compliance Authority. He is addressed as Shifu by his disciples.", details = '{"rank": "S", "attribute": "Fire", "speciality": "Rupture", "type": ["Strike"]}', base_image = "banyue_base.jpg" },
+    { name = "Ye Shunguang", slug = "shunguang", description = "Ye Shunguang is a member of Yunkui Summit. She has been awarded the title of \"Void Hunter: Qingming Arbiter.\"", details = '{"rank": "S", "attribute": "HonedEdge", "speciality": "Attack", "type": ["Strike"]}', base_image = "shunguang_base.jpg" },
+    { name = "Zhao", slug = "zhao", description = "Zhao is a member of the Krampus Compliance Authority", details = '{"rank": "S", "attribute": "Ice", "speciality": "Defense", "type": ["Strike"]}', base_image = "zhao_base.jpg" },
 ]
 
 # ===================
