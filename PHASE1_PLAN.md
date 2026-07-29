@@ -189,9 +189,21 @@ DB file location: Tauri's app-data dir (e.g. `%APPDATA%/com.khawpunkp.gmm/gmm.db
 
 ## Progress so far
 
-- [ ] Old React `src/` removed (git rm)
-- [ ] Old `main.rs` archived to `src-tauri/_legacy/main.rs.reference` (git mv)
-- [ ] `genshin.toml`/`hsr.toml`/`wuwa.toml` removed, `zzz.toml` kept
-- [ ] New frontend scaffold (package.json, vite.config.ts, tsconfig.json, index.html, src/*)
-- [ ] New Tauri v2 backend scaffold (Cargo.toml, tauri.conf.json, capabilities, src-tauri/src/*)
-- [ ] `npm install` + `npm run tauri dev` verification
+- [x] Old React `src/` removed (git rm)
+- [x] Old `main.rs` archived to `src-tauri/_legacy/main.rs.reference` (git mv)
+- [x] `genshin.toml`/`hsr.toml`/`wuwa.toml` removed, `zzz.toml` kept
+- [x] New frontend scaffold (package.json, vite.config.ts, tsconfig.json, index.html, src/*)
+- [x] New Tauri v2 backend scaffold (Cargo.toml, tauri.conf.json, capabilities, src-tauri/src/*)
+- [x] `npm install` + `npm run tauri dev` verification — `cargo check` clean, `npm audit` 0 vulnerabilities,
+      app compiled and launched (gmm.exe running), SQLite db created at `%APPDATA%/com.khawpunkp.gmm/gmm.db`
+      with all 8 tables + correct columns confirmed via Python's sqlite3 module. Visual check (sidebar,
+      5 routes, dark theme rendering) NOT done by Claude — left the dev window open for the user to eyeball.
+
+## Known gaps to revisit in a later phase
+
+- `capabilities/default.json` fs scope is currently `$APPDATA/**` + `$APPLOCALDATA/**` only — narrower than
+  the plan's "app data dir + configured mods folder" because the mods-folder picker doesn't exist until a
+  later phase. Extend the scope (or add it dynamically via the fs plugin's Rust API once a folder is chosen)
+  when that UI lands.
+- `shell:allow-execute` (for actually launching the game) was intentionally left out this phase — only
+  `shell:allow-open` is granted. Add the scoped execute permission when the launcher UI is built.

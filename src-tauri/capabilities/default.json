@@ -5,6 +5,21 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
-    "opener:default"
+    "dialog:default",
+    "fs:default",
+    "fs:allow-read-file",
+    "fs:allow-write-file",
+    "fs:allow-read-dir",
+    "fs:allow-mkdir",
+    "fs:allow-remove",
+    "fs:allow-rename",
+    "fs:allow-exists",
+    "fs:allow-copy-file",
+    {
+      "identifier": "fs:scope",
+      "allow": ["$APPDATA/**", "$APPLOCALDATA/**"]
+    },
+    "shell:allow-open",
+    "updater:default"
   ]
 }
