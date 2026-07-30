@@ -320,15 +320,23 @@ pub fn analyze(file_path: &Path, maps: &DeductionMaps) -> Result<ArchiveAnalysis
 
 // --- Import: extraction + DB insert ---
 
-fn resolve_dest_subpath(conn: &Connection, req: &ImportRequest) -> Result<PathBuf, String> {
-    if let Some(agent_id) = req.agent_id {
+/// Where a mod with this agent/category/category-item assignment lives on disk, relative to the
+/// mods folder root. Shared by archive import and by `mods::update_mod_category`'s on-disk move,
+/// so the two never disagree about a mod's expected location.
+pub(crate) fn resolve_category_subpath(
+    conn: &Connection,
+    agent_id: Option<i64>,
+    category_id: Option<i64>,
+    category_item_id: Option<i64>,
+) -> Result<PathBuf, String> {
+    if let Some(agent_id) = agent_id {
         let slug: String = conn
             .query_row("SELECT slug FROM agents WHERE id = ?1", params![agent_id], |row| row.get(0))
             .map_err(|e| e.to_string())?;
         return Ok(PathBuf::from(slug));
     }
 
-    if let Some(item_id) = req.category_item_id {
+    if let Some(item_id) = category_item_id {
         let (category_slug, item_slug): (String, String) = conn
             .query_row(
                 "SELECT c.slug, ci.slug FROM category_items ci JOIN categories c ON ci.category_id = c.id WHERE ci.id = ?1",
@@ -339,7 +347,7 @@ fn resolve_dest_subpath(conn: &Connection, req: &ImportRequest) -> Result<PathBu
         return Ok(PathBuf::from(category_slug).join(item_slug));
     }
 
-    if let Some(category_id) = req.category_id {
+    if let Some(category_id) = category_id {
         let slug: String = conn
             .query_row("SELECT slug FROM categories WHERE id = ?1", params![category_id], |row| row.get(0))
             .map_err(|e| e.to_string())?;
@@ -362,7 +370,10 @@ pub fn import(
         return Err(format!("Archive file not found: {}", archive_path.display()));
     }
 
-    let dest_subpath = resolve_dest_subpath(conn, &request)?;
+    let resolved_item_id =
+        crate::mods::resolve_category_item_or_other(conn, request.category_id, request.category_item_id)?;
+    let dest_subpath =
+        resolve_category_subpath(conn, request.agent_id, request.category_id, resolved_item_id)?;
     let target_folder_name = request.mod_name.trim().replace([' ', '.', '\'', '"'], "_");
     if target_folder_name.is_empty() {
         return Err("Mod name results in an invalid folder name.".to_string());
@@ -405,7 +416,7 @@ pub fn import(
         params![
             request.agent_id,
             request.category_id,
-            request.category_item_id,
+            resolved_item_id,
             request.mod_name.trim(),
             request.description,
             relative_path_str,

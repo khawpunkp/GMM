@@ -25,6 +25,12 @@ export interface AgentInput {
   aliases: string[];
 }
 
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
+}
+
 export interface Mod {
   id: number;
   agentId: number | null;

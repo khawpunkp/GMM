@@ -6,6 +6,11 @@ import { useUpdaterStore } from "../../stores/updater";
 const navItems = [
   { label: "Dashboard", to: "/", icon: "fa-solid fa-gauge-high" },
   { label: "Agents", to: "/agents", icon: "fa-solid fa-users" },
+  { label: "NPCs", to: "/categories/npcs", icon: "fa-solid fa-people-group" },
+  { label: "Enemies", to: "/categories/enemies", icon: "fa-solid fa-ghost" },
+  { label: "Weapons", to: "/categories/weapons", icon: "fa-solid fa-shield-halved" },
+  { label: "Objects", to: "/categories/objects", icon: "fa-solid fa-cube" },
+  { label: "UI", to: "/categories/ui", icon: "fa-solid fa-palette" },
   { label: "Presets", to: "/presets", icon: "fa-solid fa-layer-group" },
   { label: "Settings", to: "/settings", icon: "fa-solid fa-gear" },
 ];

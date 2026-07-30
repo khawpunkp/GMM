@@ -221,6 +221,17 @@ fn sync_categories(tx: &Transaction, defs: &Definitions) -> Result<(), String> {
             .map_err(|e| e.to_string())?;
         }
 
+        // Permanent catch-all item for mods that aren't tied to any specific seeded item —
+        // added to seed_slugs so the prune loop below never deletes it, even with zero mods in it.
+        let other_slug = format!("{}-other", category_slug);
+        seed_slugs.insert(other_slug.clone());
+        tx.execute(
+            "INSERT INTO category_items (category_id, name, slug) VALUES (?1, ?2, ?3)
+             ON CONFLICT(slug) DO UPDATE SET category_id = excluded.category_id, name = excluded.name",
+            params![category_id, format!("Other {}", category_def.name), other_slug],
+        )
+        .map_err(|e| e.to_string())?;
+
         let existing_slugs: Vec<String> = {
             let mut stmt = tx
                 .prepare("SELECT slug FROM category_items WHERE category_id = ?1")

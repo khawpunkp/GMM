@@ -77,6 +77,12 @@ async function handleModSubmit(input: ModInput) {
   editingMod.value = null;
 }
 
+async function handleModRecategorize(target: { agentId?: number; categoryId?: number }) {
+  if (!editingMod.value) return;
+  await modsStore.updateCategory(editingMod.value.id, target);
+  editingMod.value = null;
+}
+
 async function handleModDelete(mod: Mod) {
   if (!confirm(`Delete "${mod.name}"? This removes the mod folder from disk and cannot be undone.`)) return;
   await modsStore.remove(mod.id);
@@ -169,7 +175,13 @@ async function groupSelected() {
       </div>
     </template>
 
-    <ModEditModal v-if="editingMod" :mod="editingMod" @submit="handleModSubmit" @close="editingMod = null" />
+    <ModEditModal
+      v-if="editingMod"
+      :mod="editingMod"
+      @submit="handleModSubmit"
+      @recategorize="handleModRecategorize"
+      @close="editingMod = null"
+    />
 
     <KeybindsPopup v-if="keybindsMod" :mod-id="keybindsMod.id" @close="keybindsMod = null" />
 

@@ -17,6 +17,24 @@ export const useModsStore = defineStore("mods", {
         this.isLoading = false;
       }
     },
+    async fetchByCategory(categoryId: number) {
+      this.isLoading = true;
+      try {
+        this.mods = await invoke<Mod[]>("list_mods", { agentId: null, categoryId, categoryItemId: null });
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async updateCategory(modId: number, target: { agentId?: number; categoryId?: number }) {
+      const updated = await invoke<Mod>("update_mod_category", {
+        modId,
+        agentId: target.agentId ?? null,
+        categoryId: target.categoryId ?? null,
+        categoryItemId: null,
+      });
+      this.mods = this.mods.filter((m) => m.id !== modId);
+      return updated;
+    },
     async toggle(modId: number) {
       const isEnabled = await invoke<boolean>("toggle_mod_enabled", { modId });
       const mod = this.mods.find((m) => m.id === modId);

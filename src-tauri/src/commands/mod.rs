@@ -1,4 +1,5 @@
 pub mod agents;
+pub mod categories;
 pub mod images;
 pub mod keybinds;
 pub mod launcher;

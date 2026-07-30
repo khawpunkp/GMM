@@ -4,7 +4,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
 import type { ArchiveAnalysis, ImportArchiveRequest } from "../../types";
 
-const props = defineProps<{ agentId: number }>();
+const props = defineProps<{ agentId?: number; categoryId?: number }>();
 const emit = defineEmits<{
   close: [];
   imported: [];
@@ -60,8 +60,8 @@ async function handleImport() {
   try {
     const request: ImportArchiveRequest = {
       archivePath: archivePath.value,
-      agentId: props.agentId,
-      categoryId: null,
+      agentId: props.agentId ?? null,
+      categoryId: props.categoryId ?? null,
       categoryItemId: null,
       selectedInternalRoot: form.selectedRoot || null,
       modName: form.modName.trim(),

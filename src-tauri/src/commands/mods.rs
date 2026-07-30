@@ -47,6 +47,19 @@ pub fn update_mod_info(mod_id: i64, input: ModInput, state: State<DbState>) -> R
 }
 
 #[tauri::command]
+pub fn update_mod_category(
+    mod_id: i64,
+    agent_id: Option<i64>,
+    category_id: Option<i64>,
+    category_item_id: Option<i64>,
+    state: State<DbState>,
+) -> Result<ModWithState, String> {
+    let mods_path = get_mods_folder(&state)?;
+    let conn = state.0.lock().map_err(|e| e.to_string())?;
+    mods::update_mod_category(&conn, &mods_path, mod_id, agent_id, category_id, category_item_id)
+}
+
+#[tauri::command]
 pub fn delete_mod(mod_id: i64, state: State<DbState>) -> Result<(), String> {
     let mods_path = get_mods_folder(&state)?;
     let conn = state.0.lock().map_err(|e| e.to_string())?;

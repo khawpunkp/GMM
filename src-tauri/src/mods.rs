@@ -5,6 +5,7 @@ use base64::{engine::general_purpose::STANDARD, Engine};
 use rusqlite::{params, Connection};
 
 use crate::models::{ModInput, ModWithState};
+use crate::scanner::archive::resolve_category_subpath;
 use crate::scanner::deduce::DISABLED_PREFIX;
 
 const MOD_PREVIEW_BASENAME: &str = "mod_preview";
@@ -175,6 +176,80 @@ pub fn update_mod(
     get_mod(conn, base_mods_path, mod_id)
 }
 
+/// If `category_item_id` is already set, returns it unchanged. Otherwise, if `category_id` is set,
+/// resolves to that category's permanent "Other" item (seeded by `db::seed::sync_categories`) so a
+/// mod filed under a category is never left without an item. Returns `None` if `category_id` is
+/// also `None` (an agent-scoped, or fully uncategorized, mod).
+pub fn resolve_category_item_or_other(
+    conn: &Connection,
+    category_id: Option<i64>,
+    category_item_id: Option<i64>,
+) -> Result<Option<i64>, String> {
+    if category_item_id.is_some() {
+        return Ok(category_item_id);
+    }
+    let Some(category_id) = category_id else { return Ok(None) };
+
+    let category_slug: String = conn
+        .query_row("SELECT slug FROM categories WHERE id = ?1", params![category_id], |row| row.get(0))
+        .map_err(|e| e.to_string())?;
+    let other_slug = format!("{}-other", category_slug);
+    conn.query_row("SELECT id FROM category_items WHERE slug = ?1", params![other_slug], |row| row.get(0))
+        .map(Some)
+        .map_err(|e| e.to_string())
+}
+
+/// Reassigns a mod to a different agent or category (mutually exclusive — passing `agent_id`
+/// clears any category assignment, and vice versa), moving its folder on disk to match via
+/// `resolve_category_subpath` — the same logic archive import uses — so `folder_name` and the
+/// mod's actual location never drift apart.
+pub fn update_mod_category(
+    conn: &Connection,
+    base_mods_path: &Path,
+    mod_id: i64,
+    agent_id: Option<i64>,
+    category_id: Option<i64>,
+    category_item_id: Option<i64>,
+) -> Result<ModWithState, String> {
+    let old_folder_name: String = conn
+        .query_row("SELECT folder_name FROM mods WHERE id = ?1", params![mod_id], |row| row.get(0))
+        .map_err(|e| e.to_string())?;
+
+    let (agent_id, category_id) = if agent_id.is_some() { (agent_id, None) } else { (None, category_id) };
+    let resolved_item_id = resolve_category_item_or_other(conn, category_id, category_item_id)?;
+
+    let dest_subpath = resolve_category_subpath(conn, agent_id, category_id, resolved_item_id)?;
+    let base_name = Path::new(&old_folder_name)
+        .file_name()
+        .ok_or_else(|| "Invalid mod folder name.".to_string())?
+        .to_string_lossy()
+        .to_string();
+    let new_folder_name = dest_subpath.join(&base_name).to_string_lossy().replace('\\', "/");
+
+    if new_folder_name != old_folder_name {
+        let old_path = current_mod_path(base_mods_path, &old_folder_name)
+            .ok_or_else(|| "Mod folder not found on disk.".to_string())?;
+        let is_disabled = old_path
+            .file_name()
+            .map(|n| n.to_string_lossy().starts_with(DISABLED_PREFIX))
+            .unwrap_or(false);
+        let new_dir = base_mods_path.join(&dest_subpath);
+        fs::create_dir_all(&new_dir).map_err(|e| e.to_string())?;
+        let new_filename = if is_disabled { format!("{}{}", DISABLED_PREFIX, base_name) } else { base_name.clone() };
+        let new_path = new_dir.join(&new_filename);
+        fs::rename(&old_path, &new_path)
+            .map_err(|e| format!("Failed to move mod folder to '{}': {}", new_path.display(), e))?;
+    }
+
+    conn.execute(
+        "UPDATE mods SET agent_id = ?1, category_id = ?2, category_item_id = ?3, folder_name = ?4 WHERE id = ?5",
+        params![agent_id, category_id, resolved_item_id, new_folder_name, mod_id],
+    )
+    .map_err(|e| e.to_string())?;
+
+    get_mod(conn, base_mods_path, mod_id)
+}
+
 /// The `.ini` files directly inside whichever path variant currently exists on disk for this mod —
 /// used by keybinds parsing (and, later, skin-toggle memory in Phase 7).
 pub fn find_mod_ini_paths(base_mods_path: &Path, folder_name: &str) -> Vec<PathBuf> {
@@ -251,5 +326,96 @@ mod tests {
         let base = std::env::temp_dir().join(format!("gmm_mods_test_missing_{}", std::process::id()));
         let result = toggle_mod(&base, "DoesNotExist");
         assert!(result.is_err());
+    }
+
+    fn setup_category_test_db_and_dir() -> (Connection, PathBuf) {
+        let conn = Connection::open_in_memory().unwrap();
+        conn.execute_batch(crate::db::schema::SCHEMA).unwrap();
+
+        static COUNTER: AtomicU32 = AtomicU32::new(0);
+        let unique = COUNTER.fetch_add(1, Ordering::SeqCst);
+        let base = std::env::temp_dir().join(format!("gmm_mods_category_test_{}_{}", std::process::id(), unique));
+        let _ = fs::remove_dir_all(&base);
+
+        conn.execute("INSERT INTO categories (id, name, slug) VALUES (1, 'NPCs', 'npcs')", [])
+            .unwrap();
+        conn.execute(
+            "INSERT INTO category_items (id, category_id, name, slug) VALUES (1, 1, 'Other NPCs', 'npcs-other')",
+            [],
+        )
+        .unwrap();
+        conn.execute("INSERT INTO agents (id, name, slug) VALUES (1, 'Ellen', 'ellen')", [])
+            .unwrap();
+
+        (conn, base)
+    }
+
+    #[test]
+    fn resolve_category_item_or_other_returns_given_item_unchanged() {
+        let (conn, base) = setup_category_test_db_and_dir();
+        assert_eq!(resolve_category_item_or_other(&conn, Some(1), Some(42)).unwrap(), Some(42));
+        fs::remove_dir_all(&base).ok();
+    }
+
+    #[test]
+    fn resolve_category_item_or_other_falls_back_to_other_item() {
+        let (conn, base) = setup_category_test_db_and_dir();
+        assert_eq!(resolve_category_item_or_other(&conn, Some(1), None).unwrap(), Some(1));
+        fs::remove_dir_all(&base).ok();
+    }
+
+    #[test]
+    fn resolve_category_item_or_other_returns_none_without_category() {
+        let (conn, base) = setup_category_test_db_and_dir();
+        assert_eq!(resolve_category_item_or_other(&conn, None, None).unwrap(), None);
+        fs::remove_dir_all(&base).ok();
+    }
+
+    #[test]
+    fn update_mod_category_moves_folder_and_updates_row() {
+        let (conn, base) = setup_category_test_db_and_dir();
+
+        let old_folder = "npcs/npcs-other/SomeMod";
+        fs::create_dir_all(base.join(old_folder)).unwrap();
+        fs::write(base.join(old_folder).join("mod.ini"), "").unwrap();
+        conn.execute(
+            "INSERT INTO mods (category_id, category_item_id, name, folder_name) VALUES (1, 1, 'Some Mod', ?1)",
+            params![old_folder],
+        )
+        .unwrap();
+        let mod_id = conn.last_insert_rowid();
+
+        let updated = update_mod_category(&conn, &base, mod_id, Some(1), None, None).expect("move should succeed");
+
+        assert_eq!(updated.agent_id, Some(1));
+        assert_eq!(updated.category_id, None);
+        assert_eq!(updated.category_item_id, None);
+        assert_eq!(updated.folder_name, "ellen/SomeMod");
+        assert!(base.join("ellen").join("SomeMod").is_dir());
+        assert!(!base.join(old_folder).is_dir());
+
+        fs::remove_dir_all(&base).ok();
+    }
+
+    #[test]
+    fn update_mod_category_preserves_disabled_prefix() {
+        let (conn, base) = setup_category_test_db_and_dir();
+
+        let old_folder = "npcs/npcs-other/SomeMod";
+        fs::create_dir_all(base.join("npcs/npcs-other")).unwrap();
+        fs::create_dir_all(base.join("npcs/npcs-other").join(format!("{}SomeMod", DISABLED_PREFIX))).unwrap();
+        conn.execute(
+            "INSERT INTO mods (category_id, category_item_id, name, folder_name) VALUES (1, 1, 'Some Mod', ?1)",
+            params![old_folder],
+        )
+        .unwrap();
+        let mod_id = conn.last_insert_rowid();
+
+        let updated = update_mod_category(&conn, &base, mod_id, Some(1), None, None).expect("move should succeed");
+
+        assert_eq!(updated.folder_name, "ellen/SomeMod");
+        assert!(base.join("ellen").join(format!("{}SomeMod", DISABLED_PREFIX)).is_dir());
+
+        fs::remove_dir_all(&base).ok();
     }
 }

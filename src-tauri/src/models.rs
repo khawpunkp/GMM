@@ -25,6 +25,14 @@ pub struct AgentInput {
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
+pub struct Category {
+    pub id: i64,
+    pub name: String,
+    pub slug: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ModWithState {
     pub id: i64,
     pub agent_id: Option<i64>,
