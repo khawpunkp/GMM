@@ -4,7 +4,8 @@ use rusqlite::params;
 use tauri::{AppHandle, State};
 use tauri_plugin_opener::OpenerExt;
 
-use crate::models::{ModInput, ModWithState};
+use crate::keybinds;
+use crate::models::{KeybindInfo, ModInput, ModWithState};
 use crate::mods;
 use crate::DbState;
 
@@ -67,4 +68,14 @@ pub fn open_mod_folder(mod_id: i64, state: State<DbState>, app_handle: AppHandle
         .opener()
         .open_path(path.to_string_lossy().to_string(), None::<String>)
         .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn get_mod_keybinds(mod_id: i64, state: State<DbState>) -> Result<Vec<KeybindInfo>, String> {
+    let mods_path = get_mods_folder(&state)?;
+    let conn = state.0.lock().map_err(|e| e.to_string())?;
+    let folder_name: String = conn
+        .query_row("SELECT folder_name FROM mods WHERE id = ?1", params![mod_id], |row| row.get(0))
+        .map_err(|e| e.to_string())?;
+    Ok(keybinds::get_keybinds(&mods_path, &folder_name))
 }

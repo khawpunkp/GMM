@@ -8,9 +8,11 @@ import { useSettingsStore } from "../stores/settings";
 const settingsStore = useSettingsStore();
 
 const modsFolderPath = ref<string | null>(null);
-const   isScanning = ref(false);
+const isScanning = ref(false);
 const statusMessage = ref<string | null>(null);
 const errorMessage = ref<string | null>(null);
+
+const gameExecutablePath = ref<string | null>(null);
 
 let unlistenProgress: UnlistenFn | null = null;
 let unlistenComplete: UnlistenFn | null = null;
@@ -18,6 +20,7 @@ let unlistenError: UnlistenFn | null = null;
 
 onMounted(async () => {
   modsFolderPath.value = await settingsStore.fetch("mods_folder_path");
+  gameExecutablePath.value = await settingsStore.fetch("game_executable_path");
 
   unlistenProgress = await listen<{ processed: number; currentPath: string | null; message: string }>(
     "scan-progress",
@@ -66,6 +69,17 @@ async function runScan() {
     isScanning.value = false;
   }
 }
+
+async function chooseGameExecutable() {
+  const path = await open({
+    multiple: false,
+    filters: [{ name: "Executable", extensions: ["exe"] }],
+  });
+  if (typeof path === "string") {
+    await settingsStore.set("game_executable_path", path);
+    gameExecutablePath.value = path;
+  }
+}
 </script>
 
 <template>
@@ -85,6 +99,14 @@ async function runScan() {
       </div>
       <p v-if="statusMessage" class="settings-status">{{ statusMessage }}</p>
       <p v-if="errorMessage" class="settings-error">{{ errorMessage }}</p>
+    </div>
+
+    <div class="card settings-section">
+      <h2 class="settings-section-title">Game Executable</h2>
+      <p class="settings-value">{{ gameExecutablePath ?? "Not set" }}</p>
+      <div class="form-actions settings-actions">
+        <button type="button" class="btn btn-secondary" @click="chooseGameExecutable">Choose Executable</button>
+      </div>
     </div>
   </div>
 </template>

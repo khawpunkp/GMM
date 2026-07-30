@@ -85,13 +85,23 @@ Let me know if you'd rather I just plan+build the whole thing in one continuous 
   `get_setting`/`set_setting` infra from Phase 3), spawns it via `tauri_plugin_shell`, surfaces the
   Windows-740-needs-elevation case as a specific error message like the old app did.
 
-## Capability change needed
+## Capability change needed — this turned out to be wrong, corrected during 4d
 
-`capabilities/default.json` needs a `shell:allow-execute` entry scoped to `cmd: "{0}"` (execute
-whatever absolute path is passed in) — mirrors the old v1 allowlist's `execute-any-file` entry. This
-is deliberately permissive (not a fixed allowlist of specific programs) because the whole point is
-launching whatever game executable the user points at via the Settings file picker, same reasoning as
-the already-permissive fs scope from Phase 1. Extends the "known gaps" flagged back in Phase 1.
+This section originally said `capabilities/default.json` needs a `shell:allow-execute` entry scoped
+to `cmd: "{0}"`, mirroring v1's `execute-any-file` wildcard. Before implementing, I read the actual
+installed `tauri-plugin-shell@2.3.5` crate source (`scope_entry.rs`/`scope.rs`/`lib.rs`) rather than
+trust that assumption, and it's flatly wrong for v2: each scope entry's `cmd` field deserializes as a
+**fixed `PathBuf`** — there's no `"{0}"` wildcard mechanism anymore. A static capabilities entry can't
+pre-declare a path the user only picks at runtime via the Settings file dialog, so the v1-style
+approach was never going to work here at all.
+
+The actual fix needed **no capability change whatsoever**: `Shell::command()` (the plugin's Rust-side
+API, called from my own custom `launch_game` command) calls `Command::new(program)` directly with
+**zero scope validation** — the named-scope lookup (`ShellScope::prepare`) only guards the plugin's
+own JS-invokable `execute` IPC command, not Rust-side calls to `Shell::command()`. Same "bypass the
+IPC-facing capability scope from Rust code" pattern already used for `read_image_as_data_url` (Phase 2)
+and the scanner's/archive importer's direct filesystem access (Phase 3) — capability scopes only gate
+the JS→Rust IPC boundary, not code I write on the Rust side that never crosses it.
 
 ## Explicitly out of scope for Phase 4
 
@@ -111,8 +121,8 @@ deprecated in favor of `tauri-plugin-opener`, the officially recommended plugin 
 registered it in `lib.rs`, swapped the capability entry from `shell:allow-open` to `opener:default`
 (this is the same `opener:default` permission Phase 1 had originally stubbed and then deliberately
 removed — turns out that removal was premature). `tauri-plugin-shell` stays a dependency for 4d's
-launcher, which needs actual process-spawning (`shell:allow-execute`), a genuinely different
-capability that `opener` doesn't cover.
+launcher, which needs actual process-spawning via the plugin's Rust API — see the corrected
+"Capability change needed" section above for why that ended up needing no capability entry at all.
 
 ## 4a verification
 
@@ -175,10 +185,32 @@ the updated agent page and the new component from the dev server to confirm they
 errors. **Not tested against a real archive** — same gap Phase 3 flagged for `analyze_archive`/
 `import_archive` themselves; try a real `.zip` mod through this modal before trusting the path.
 
+## 4d verification
+
+**Automated** (`cargo test`, all 8 pass across the whole crate now):
+- `parses_keybinds_after_constants_marker` / `ignores_key_sections_before_constants_marker` /
+  `returns_empty_when_no_constants_marker` — the keybinds parser is a pure `&str -> Vec<KeybindInfo>`
+  function (`parse_keybinds_from_ini`), split out specifically so it's testable without touching the
+  filesystem. Covers the actual risky logic (the `; Constants` marker + `[Key...]` section scan).
+
+`cargo check` and `vue-tsc -b` both clean. `launch_game` itself isn't unit-tested — it's inherently
+OS-process-spawning, not meaningfully testable without mocking the shell plugin, and I don't have a
+real game executable to test it against live. Same category of gap as Phase 3's untested archive
+extraction — flagging rather than silently skipping.
+
+**Added beyond the original plan**: built out `pages/index.vue` (the Dashboard, a placeholder since
+Phase 1) with a Launch Game button and basic mod-count stats (total/enabled/uncategorized), since the
+launcher needed *somewhere* to live and the plan itself argued Settings shouldn't be it. Settings
+gained a second section (Game Executable path picker) alongside the existing Mods Folder one.
+`ModCard.vue` gained a fourth icon button (keybinds) alongside edit/open-folder/delete.
+
+**Manual, flagged for you**: clicking Launch Game against a real configured executable, and opening
+Keybinds on a mod that actually has a `; Constants` section with real `[Key...]` bindings.
+
 ## Progress so far
 
 - [x] Staging decision confirmed: 4a → 4b → 4c → 4d, each its own commit
 - [x] 4a: mod cards + enable/disable
 - [x] 4b: presets
 - [x] 4c: import modal (agent-scoped only — see gap noted above)
-- [ ] 4d: keybinds popup + launcher
+- [x] 4d: keybinds popup + launcher — **Phase 4 complete**

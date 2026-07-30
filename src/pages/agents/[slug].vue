@@ -5,6 +5,7 @@ import AgentForm from "../../components/agents/AgentForm.vue";
 import ModCard from "../../components/mods/ModCard.vue";
 import ModEditModal from "../../components/mods/ModEditModal.vue";
 import ImportModal from "../../components/mods/ImportModal.vue";
+import KeybindsPopup from "../../components/mods/KeybindsPopup.vue";
 import { useAgentsStore } from "../../stores/agents";
 import { useModsStore } from "../../stores/mods";
 import type { Agent, AgentInput, Mod, ModInput } from "../../types";
@@ -18,6 +19,7 @@ const agent = ref<Agent | null>(null);
 const isLoading = ref(true);
 const errorMessage = ref<string | null>(null);
 const editingMod = ref<Mod | null>(null);
+const keybindsMod = ref<Mod | null>(null);
 const isImporting = ref(false);
 
 onMounted(async () => {
@@ -99,12 +101,15 @@ async function handleImported() {
             :mod="mod"
             @edit="editingMod = $event"
             @delete="handleModDelete"
+            @keybinds="keybindsMod = $event"
           />
         </div>
       </div>
     </template>
 
     <ModEditModal v-if="editingMod" :mod="editingMod" @submit="handleModSubmit" @close="editingMod = null" />
+
+    <KeybindsPopup v-if="keybindsMod" :mod-id="keybindsMod.id" @close="keybindsMod = null" />
 
     <ImportModal
       v-if="isImporting && agent"

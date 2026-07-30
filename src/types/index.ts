@@ -84,3 +84,8 @@ export interface Preset {
   name: string;
   isFavorite: boolean;
 }
+
+export interface KeybindInfo {
+  title: string;
+  key: string;
+}

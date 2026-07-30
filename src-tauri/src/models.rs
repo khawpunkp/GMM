@@ -57,3 +57,10 @@ pub struct Preset {
     pub name: String,
     pub is_favorite: bool,
 }
+
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct KeybindInfo {
+    pub title: String,
+    pub key: String,
+}

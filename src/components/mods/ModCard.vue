@@ -9,6 +9,7 @@ const props = defineProps<{ mod: Mod }>();
 const emit = defineEmits<{
   edit: [mod: Mod];
   delete: [mod: Mod];
+  keybinds: [mod: Mod];
 }>();
 
 const settingsStore = useSettingsStore();
@@ -53,6 +54,9 @@ function openFolder() {
       </button>
       <button type="button" class="icon-btn" title="Open folder" @click="openFolder">
         <i class="fa-solid fa-folder-open"></i>
+      </button>
+      <button type="button" class="icon-btn" title="Keybinds" @click="emit('keybinds', mod)">
+        <i class="fa-solid fa-keyboard"></i>
       </button>
       <button type="button" class="icon-btn icon-btn-danger" title="Delete" @click="emit('delete', mod)">
         <i class="fa-solid fa-trash"></i>
