@@ -25,17 +25,30 @@ CREATE TABLE IF NOT EXISTS agent_aliases (
     UNIQUE (agent_id, alias)
 );
 
+CREATE TABLE IF NOT EXISTS category_items (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    category_id INTEGER NOT NULL,
+    name        TEXT NOT NULL,
+    slug        TEXT UNIQUE NOT NULL,
+    description TEXT,
+    details     TEXT,
+    base_image  TEXT,
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS mods (
-    id             INTEGER PRIMARY KEY AUTOINCREMENT,
-    agent_id       INTEGER,   -- nullable: UI/uncategorized mods
-    category_id    INTEGER,
-    name           TEXT NOT NULL,
-    description    TEXT,
-    folder_name    TEXT NOT NULL UNIQUE,
-    image_filename TEXT,
-    author         TEXT,
-    FOREIGN KEY (agent_id)    REFERENCES agents(id)     ON DELETE SET NULL,
-    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent_id          INTEGER,   -- nullable: UI/uncategorized mods
+    category_id       INTEGER,
+    category_item_id  INTEGER,
+    name              TEXT NOT NULL,
+    description       TEXT,
+    folder_name       TEXT NOT NULL UNIQUE,
+    image_filename    TEXT,
+    author            TEXT,
+    FOREIGN KEY (agent_id)         REFERENCES agents(id)         ON DELETE SET NULL,
+    FOREIGN KEY (category_id)      REFERENCES categories(id)     ON DELETE SET NULL,
+    FOREIGN KEY (category_item_id) REFERENCES category_items(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS mod_groups (

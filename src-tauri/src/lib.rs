@@ -1,14 +1,11 @@
+mod commands;
 mod db;
+mod models;
 
 use std::sync::Mutex;
 use tauri::Manager;
 
 pub struct DbState(pub Mutex<rusqlite::Connection>);
-
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -23,11 +20,20 @@ pub fn run() {
     builder
         .setup(|app| {
             let app_data_dir = app.path().app_data_dir()?;
-            let conn = db::init_db(&app_data_dir).expect("failed to initialize database");
+            let mut conn = db::init_db(&app_data_dir).expect("failed to initialize database");
+            db::seed::sync_definitions(&mut conn, &app.handle())
+                .expect("failed to sync built-in definitions");
             app.manage(DbState(Mutex::new(conn)));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![
+            commands::agents::list_agents,
+            commands::agents::get_agent,
+            commands::agents::create_agent,
+            commands::agents::update_agent,
+            commands::agents::delete_agent,
+            commands::images::read_image_as_data_url,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

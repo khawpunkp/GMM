@@ -6,12 +6,30 @@ export interface Agent {
   details: string | null;
   baseImage: string | null;
   isBuiltin: boolean;
+  aliases: string[];
+}
+
+// Structured shape serialized into Agent.details (a free-form TEXT column in the schema).
+export interface AgentDetails {
+  rank: string;
+  attribute: string;
+  speciality: string;
+  type: string[];
+}
+
+export interface AgentInput {
+  name: string;
+  description: string | null;
+  details: string | null;
+  baseImage: string | null;
+  aliases: string[];
 }
 
 export interface Mod {
   id: number;
   agentId: number | null;
   categoryId: number | null;
+  categoryItemId: number | null;
   name: string;
   description: string | null;
   folderName: string;
