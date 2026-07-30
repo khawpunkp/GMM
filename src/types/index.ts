@@ -51,6 +51,34 @@ export interface ModGroup {
   modIds: number[];
 }
 
+export interface ArchiveEntry {
+  path: string;
+  isDir: boolean;
+  isLikelyModRoot: boolean;
+}
+
+export interface ArchiveAnalysis {
+  filePath: string;
+  entries: ArchiveEntry[];
+  deducedName: string | null;
+  deducedAuthor: string | null;
+  deducedAgentId: number | null;
+  deducedCategoryId: number | null;
+  deducedCategoryItemId: number | null;
+  detectedPreviewInternalPath: string | null;
+}
+
+export interface ImportArchiveRequest {
+  archivePath: string;
+  agentId: number | null;
+  categoryId: number | null;
+  categoryItemId: number | null;
+  selectedInternalRoot: string | null;
+  modName: string;
+  description: string | null;
+  author: string | null;
+}
+
 export interface Preset {
   id: number;
   name: string;

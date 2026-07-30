@@ -4,6 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import AgentForm from "../../components/agents/AgentForm.vue";
 import ModCard from "../../components/mods/ModCard.vue";
 import ModEditModal from "../../components/mods/ModEditModal.vue";
+import ImportModal from "../../components/mods/ImportModal.vue";
 import { useAgentsStore } from "../../stores/agents";
 import { useModsStore } from "../../stores/mods";
 import type { Agent, AgentInput, Mod, ModInput } from "../../types";
@@ -17,6 +18,7 @@ const agent = ref<Agent | null>(null);
 const isLoading = ref(true);
 const errorMessage = ref<string | null>(null);
 const editingMod = ref<Mod | null>(null);
+const isImporting = ref(false);
 
 onMounted(async () => {
   try {
@@ -60,6 +62,11 @@ async function handleModDelete(mod: Mod) {
   if (!confirm(`Delete "${mod.name}"? This removes the mod folder from disk and cannot be undone.`)) return;
   await modsStore.remove(mod.id);
 }
+
+async function handleImported() {
+  isImporting.value = false;
+  if (agent.value) await modsStore.fetchByAgent(agent.value.id);
+}
 </script>
 
 <template>
@@ -79,7 +86,10 @@ async function handleModDelete(mod: Mod) {
       </AgentForm>
 
       <div class="mods-section">
-        <h2 class="settings-section-title">Mods</h2>
+        <div class="page-header">
+          <h2 class="settings-section-title">Mods</h2>
+          <button type="button" class="btn btn-primary" @click="isImporting = true">+ Import Mod</button>
+        </div>
         <p v-if="modsStore.isLoading">Loading mods…</p>
         <p v-else-if="modsStore.mods.length === 0" class="settings-value">No mods for this agent yet.</p>
         <div v-else class="mod-grid">
@@ -94,11 +104,13 @@ async function handleModDelete(mod: Mod) {
       </div>
     </template>
 
-    <ModEditModal
-      v-if="editingMod"
-      :mod="editingMod"
-      @submit="handleModSubmit"
-      @close="editingMod = null"
+    <ModEditModal v-if="editingMod" :mod="editingMod" @submit="handleModSubmit" @close="editingMod = null" />
+
+    <ImportModal
+      v-if="isImporting && agent"
+      :agent-id="agent.id"
+      @imported="handleImported"
+      @close="isImporting = false"
     />
   </div>
 </template>

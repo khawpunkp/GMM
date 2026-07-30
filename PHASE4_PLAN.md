@@ -154,10 +154,31 @@ Phase 1 that never matched what the backend actually returns; removed it along w
 **Manual, flagged for you**: actually clicking through create/apply/overwrite/delete/favorite and
 watching the live apply-progress status line.
 
+## 4c: import modal — scoped narrower than the original plan text
+
+Built `ImportModal.vue`: pick a `.zip`/`.7z`/`.rar` via the dialog plugin, `analyze_archive`, a review
+form (name/description/author, a root picker if the archive has multiple likely mod roots), then
+`import_archive` on submit. Entry point is a new "+ Import Mod" button in the agent detail page's
+Mods section header — no new backend, exactly as planned (wires up Phase 3's already-built commands).
+
+**Deliberately narrower than it could be**: the modal always imports into whichever agent's page you
+opened it from (`agentId` prop), even if the archive's own analysis detects a *different* target (or
+a category instead of an agent). A fully general import entry point — open it from anywhere, let the
+analysis's own agent/category detection freely apply, with a search-across-51-agents-and-5-categories
+picker to override — would need a real picker component I didn't build this pass. What's here covers
+the concrete, common case (you're looking at a character's page, you want to add a mod for them)
+without that extra UI surface. Flagging as a real gap, not a silent omission — worth a follow-up if a
+global "Import Mod" entry point on the Dashboard or Agents list turns out to matter in practice.
+
+**Verification**: `vue-tsc -b` clean (no backend changes this stage, so no `cargo` run needed). Fetched
+the updated agent page and the new component from the dev server to confirm they transform without
+errors. **Not tested against a real archive** — same gap Phase 3 flagged for `analyze_archive`/
+`import_archive` themselves; try a real `.zip` mod through this modal before trusting the path.
+
 ## Progress so far
 
 - [x] Staging decision confirmed: 4a → 4b → 4c → 4d, each its own commit
 - [x] 4a: mod cards + enable/disable
 - [x] 4b: presets
-- [ ] 4c: import modal
+- [x] 4c: import modal (agent-scoped only — see gap noted above)
 - [ ] 4d: keybinds popup + launcher
