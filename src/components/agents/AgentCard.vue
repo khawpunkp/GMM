@@ -55,8 +55,7 @@ const specialityIcon = computed(() =>
       >
         <img
           :src="resolveAgentImageSrc(agent.baseImage)"
-          class="absolute size-full top-0 left-0"
-          :class="agent.baseImage ? 'object-contain' : 'object-cover'"
+          class="absolute size-full top-0 left-0 object-cover"
         />
         <img
           v-if="specialityIcon"

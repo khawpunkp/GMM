@@ -231,8 +231,7 @@ async function groupSelected() {
       </VueTypography>
     </div>
 
-    <p v-if="isLoading">Loading…</p>
-    <p v-else-if="errorMessage">{{ errorMessage }}</p>
+    <p v-if="errorMessage">{{ errorMessage }}</p>
     <template v-else-if="agent">
       <AgentForm
         :key="agent.slug"
@@ -309,13 +308,12 @@ async function groupSelected() {
           </div>
         </div>
 
-        <p v-if="modsStore.isLoading">Loading mods…</p>
-        <p
-          v-else-if="modsStore.mods.length === 0"
-          class="text-sm text-muted-foreground"
+        <div
+          v-if="modsStore.mods.length === 0"
+          class="flex-1 flex justify-center items-center min-h-50"
         >
-          No mods for this agent yet.
-        </p>
+          <img src="/images/no-data.png" class="w-50" />
+        </div>
         <p
           v-else-if="
             sortedFilteredMods.length === 0 && filteredGroups.length === 0
@@ -362,6 +360,5 @@ async function groupSelected() {
       :mod-id="keybindsMod.id"
       @close="keybindsMod = null"
     />
-
   </div>
 </template>

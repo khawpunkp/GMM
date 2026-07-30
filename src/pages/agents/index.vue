@@ -147,7 +147,7 @@ const visibleAgents = computed(() => {
           v-for="rank in RANKS"
           :key="rank.key"
           type="button"
-          class="inline-flex items-center rounded-full border border-[#1f1e36] bg-[#1f1e36] p-1.5 transition-colors size-9 justify-center"
+          class="inline-flex items-center rounded-2xl border border-[#1f1e36] bg-[#1f1e36] p-1.5 transition-colors size-9 justify-center"
           :class="
             selectedRank === rank.key
               ? 'border-white/40 bg-white/10'
@@ -164,7 +164,7 @@ const visibleAgents = computed(() => {
           v-for="attribute in ATTRIBUTES"
           :key="attribute.key"
           type="button"
-          class="inline-flex items-center rounded-full border border-[#1f1e36] bg-[#1f1e36] p-1.5 transition-colors size-9 justify-center"
+          class="inline-flex items-center rounded-2xl border border-[#1f1e36] bg-[#1f1e36] p-1.5 transition-colors size-9 justify-center"
           :class="
             selectedAttribute === attribute.key
               ? 'border-white/40 bg-white/10'
@@ -181,7 +181,7 @@ const visibleAgents = computed(() => {
           v-for="speciality in SPECIALITIES"
           :key="speciality.key"
           type="button"
-          class="inline-flex items-center rounded-full border border-[#1f1e36] bg-[#1f1e36] p-1.5 transition-colors size-9 justify-center"
+          class="inline-flex items-center rounded-2xl border border-[#1f1e36] bg-[#1f1e36] p-1.5 transition-colors size-9 justify-center"
           :class="
             selectedSpeciality === speciality.key
               ? 'border-white/40 bg-white/10'
@@ -213,11 +213,7 @@ const visibleAgents = computed(() => {
       </div>
     </div>
 
-    <p v-if="agentsStore.isLoading">Loading…</p>
-    <p
-      v-else-if="visibleAgents.length === 0"
-      class="text-sm text-muted-foreground"
-    >
+    <p v-if="visibleAgents.length === 0" class="text-sm text-muted-foreground">
       No agents match your filters.
     </p>
     <div

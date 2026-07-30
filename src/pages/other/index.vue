@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
-import { PhDotsThreeOutline, PhMagnifyingGlass } from "@phosphor-icons/vue";
+import { PhDotsThreeCircle, PhMagnifyingGlass } from "@phosphor-icons/vue";
 import ModCard from "../../components/mods/ModCard.vue";
 import GroupCard from "../../components/mods/GroupCard.vue";
 import ModEditModal from "../../components/mods/ModEditModal.vue";
@@ -93,7 +93,10 @@ async function loadMods() {
   isLoading.value = true;
   errorMessage.value = null;
   try {
-    await Promise.all([modsStore.fetchUncategorized(), modGroupsStore.fetchAll()]);
+    await Promise.all([
+      modsStore.fetchUncategorized(),
+      modGroupsStore.fetchAll(),
+    ]);
   } catch (e) {
     errorMessage.value = String(e);
   } finally {
@@ -167,7 +170,7 @@ async function groupSelected() {
       class="mb-6 flex flex-wrap items-center justify-between gap-5 border-b border-white/10 pb-4"
     >
       <VueTypography variant="H1B" as="h1" class="flex items-center gap-3">
-        <PhDotsThreeOutline :size="32" weight="fill" />Other
+        <PhDotsThreeCircle :size="32" weight="fill" />Other
       </VueTypography>
       <div class="flex items-center gap-3">
         <VueButton
@@ -186,11 +189,6 @@ async function groupSelected() {
         >
       </div>
     </div>
-
-    <VueTypography variant="CaptionR" as="p" class="mb-6 text-muted-foreground">
-      Mods that aren't assigned to an agent or a category yet. Edit a mod to
-      give it one.
-    </VueTypography>
 
     <div
       class="mb-6 flex flex-wrap items-center gap-5 border-b border-white/10 pb-4"
@@ -214,8 +212,7 @@ async function groupSelected() {
       </div>
     </div>
 
-    <p v-if="isLoading">Loading…</p>
-    <p v-else-if="errorMessage" class="text-destructive">{{ errorMessage }}</p>
+    <p v-if="errorMessage" class="text-destructive">{{ errorMessage }}</p>
     <template v-else>
       <p
         v-if="modsStore.mods.length === 0"

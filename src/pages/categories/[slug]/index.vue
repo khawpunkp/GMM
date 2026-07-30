@@ -193,7 +193,7 @@ async function groupSelected() {
 </script>
 
 <template>
-  <div>
+  <div class="h-full flex flex-col">
     <div
       class="mb-6 flex flex-wrap items-center justify-between gap-5 border-b border-white/10 pb-4"
     >
@@ -245,15 +245,14 @@ async function groupSelected() {
       </div>
     </div>
 
-    <p v-if="isLoading">Loading…</p>
-    <p v-else-if="errorMessage" class="text-destructive">{{ errorMessage }}</p>
+    <p v-if="errorMessage" class="text-destructive">{{ errorMessage }}</p>
     <template v-else>
-      <p
+      <div
         v-if="modsStore.mods.length === 0"
-        class="text-sm text-muted-foreground"
+        class="flex-1 flex justify-center items-center"
       >
-        No mods in this category yet.
-      </p>
+        <img src="/images/no-data.png" class="w-50" />
+      </div>
       <p
         v-else-if="
           sortedFilteredMods.length === 0 && filteredGroups.length === 0
@@ -299,6 +298,5 @@ async function groupSelected() {
       :mod-id="keybindsMod.id"
       @close="keybindsMod = null"
     />
-
   </div>
 </template>
