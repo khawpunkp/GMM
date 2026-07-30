@@ -4,7 +4,6 @@ mod keybinds;
 mod mod_groups;
 mod models;
 mod mods;
-mod presets;
 mod process_check;
 mod scanner;
 
@@ -44,6 +43,7 @@ pub fn run() {
             commands::images::read_image_as_data_url,
             commands::settings::get_setting,
             commands::settings::set_setting,
+            commands::settings::open_mods_folder,
             commands::scanner::scan_mods_directory,
             commands::scanner::analyze_archive,
             commands::scanner::import_archive,
@@ -56,12 +56,6 @@ pub fn run() {
             commands::mods::get_mod_keybinds,
             commands::keybinds::get_mod_persist_vars,
             commands::keybinds::set_mod_persist_var,
-            commands::presets::list_presets,
-            commands::presets::create_preset,
-            commands::presets::overwrite_preset,
-            commands::presets::delete_preset,
-            commands::presets::toggle_preset_favorite,
-            commands::presets::apply_preset,
             commands::launcher::launch_game,
             commands::mod_groups::list_mod_groups,
             commands::mod_groups::create_mod_group,

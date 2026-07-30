@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import VueButton from "@/components/ui/button/VueButton.vue";
+import VueTypography from "@/components/ui/typography/VueTypography.vue";
 import { useUpdaterStore } from "../stores/updater";
 
 const emit = defineEmits<{ close: [] }>();
@@ -26,32 +28,36 @@ async function handleRestart() {
 </script>
 
 <template>
-  <div class="modal-overlay" @click.self="handleClose">
-    <div class="modal-content card">
-      <h2 class="settings-section-title">Update Available: v{{ updaterStore.update?.version }}</h2>
-      <p class="settings-value">Currently running v{{ updaterStore.update?.currentVersion }}</p>
-      <p v-if="updaterStore.update?.body" class="update-notes">{{ updaterStore.update.body }}</p>
+  <div class="fixed inset-0 z-100 flex items-center justify-center bg-black/60" @click.self="handleClose">
+    <div class="w-11/12 max-w-120 max-h-[85vh] overflow-y-auto rounded-2xl border border-white/10 bg-card p-6">
+      <VueTypography variant="TitleB" as="h2" class="mb-2.5">Update Available: v{{ updaterStore.update?.version }}</VueTypography>
+      <VueTypography variant="CaptionR" as="p" class="mb-4 text-muted-foreground">
+        Currently running v{{ updaterStore.update?.currentVersion }}
+      </VueTypography>
+      <VueTypography v-if="updaterStore.update?.body" variant="CaptionR" as="p" class="mb-5 max-h-50 overflow-y-auto whitespace-pre-wrap text-foreground/70">
+        {{ updaterStore.update.body }}
+      </VueTypography>
 
-      <div v-if="updaterStore.isDownloading" class="update-progress">
-        <div class="update-progress-bar">
-          <div class="update-progress-fill" :style="{ width: (progressPercent ?? 0) + '%' }"></div>
+      <div v-if="updaterStore.isDownloading" class="my-2.5">
+        <div class="h-2 w-full overflow-hidden rounded-full bg-white/10">
+          <div class="h-full bg-primary transition-[width]" :style="{ width: (progressPercent ?? 0) + '%' }"></div>
         </div>
-        <p class="settings-status">{{ progressPercent !== null ? `${progressPercent}%` : "Downloading…" }}</p>
+        <VueTypography variant="CaptionR" as="p" class="mt-3.5 text-muted-foreground">
+          {{ progressPercent !== null ? `${progressPercent}%` : "Downloading…" }}
+        </VueTypography>
       </div>
 
-      <p v-if="updaterStore.errorMessage" class="settings-error">{{ updaterStore.errorMessage }}</p>
+      <VueTypography v-if="updaterStore.errorMessage" variant="CaptionR" as="p" class="mt-3.5 text-destructive">
+        {{ updaterStore.errorMessage }}
+      </VueTypography>
 
-      <div class="form-actions">
-        <button v-if="updaterStore.isReadyToRestart" type="button" class="btn btn-primary" @click="handleRestart">
-          Restart Now
-        </button>
+      <div class="mt-2.5 flex items-center justify-end gap-3">
+        <VueButton v-if="updaterStore.isReadyToRestart" type="button" @click="handleRestart">Restart Now</VueButton>
         <template v-else>
-          <button type="button" class="btn btn-secondary" :disabled="updaterStore.isDownloading" @click="handleClose">
-            Later
-          </button>
-          <button type="button" class="btn btn-primary" :disabled="updaterStore.isDownloading" @click="handleInstall">
+          <VueButton type="button" variant="outlined" :disabled="updaterStore.isDownloading" @click="handleClose">Later</VueButton>
+          <VueButton type="button" :disabled="updaterStore.isDownloading" @click="handleInstall">
             {{ updaterStore.isDownloading ? "Downloading…" : "Download & Install" }}
-          </button>
+          </VueButton>
         </template>
       </div>
     </div>

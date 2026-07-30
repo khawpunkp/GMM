@@ -59,14 +59,6 @@ pub struct ModInput {
     pub image_data_url: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Preset {
-    pub id: i64,
-    pub name: String,
-    pub is_favorite: bool,
-}
-
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct KeybindInfo {

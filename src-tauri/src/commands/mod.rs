@@ -5,6 +5,5 @@ pub mod keybinds;
 pub mod launcher;
 pub mod mod_groups;
 pub mod mods;
-pub mod presets;
 pub mod scanner;
 pub mod settings;

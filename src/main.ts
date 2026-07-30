@@ -8,7 +8,7 @@ import "./styles/main.css";
 
 const router = createRouter({
   history: createWebHistory(),
-  routes,
+  routes: [...routes, { path: "/", redirect: "/agents" }],
 });
 
 const app = createApp(App);

@@ -1,12 +1,20 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import VueRouter from "vue-router/vite";
+import tailwindcss from "@tailwindcss/vite";
+import path from "path";
 
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
-  plugins: [VueRouter(), vue()],
+  plugins: [VueRouter(), vue(), tailwindcss()],
+
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //

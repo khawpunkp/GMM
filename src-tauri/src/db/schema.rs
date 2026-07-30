@@ -64,21 +64,6 @@ CREATE TABLE IF NOT EXISTS mod_group_members (
     FOREIGN KEY (mod_id)   REFERENCES mods(id)        ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS presets (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    name        TEXT UNIQUE NOT NULL,
-    is_favorite INTEGER NOT NULL DEFAULT 0
-);
-
-CREATE TABLE IF NOT EXISTS preset_mods (
-    preset_id  INTEGER NOT NULL,
-    mod_id     INTEGER NOT NULL,
-    is_enabled INTEGER NOT NULL,
-    PRIMARY KEY (preset_id, mod_id),
-    FOREIGN KEY (preset_id) REFERENCES presets(id) ON DELETE CASCADE,
-    FOREIGN KEY (mod_id)    REFERENCES mods(id)     ON DELETE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS settings (
     key   TEXT PRIMARY KEY NOT NULL,
     value TEXT NOT NULL

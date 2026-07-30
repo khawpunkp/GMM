@@ -31,11 +31,39 @@ fn migrate_mod_group_members_unique(conn: &Connection) -> rusqlite::Result<()> {
     Ok(())
 }
 
+/// Presets were removed outright (not replaced by anything) — drop any existing data rather than
+/// leaving orphaned tables `schema::SCHEMA` no longer recreates. Gated the same way as the group
+/// migration above so this only runs once per install.
+fn migrate_drop_presets(conn: &Connection) -> rusqlite::Result<()> {
+    conn.execute_batch("CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL);")?;
+
+    let already_migrated = conn
+        .query_row(
+            "SELECT value FROM settings WHERE key = 'migration_drop_presets'",
+            [],
+            |row| row.get::<_, String>(0),
+        )
+        .optional()?
+        .is_some();
+
+    if !already_migrated {
+        conn.execute("DROP TABLE IF EXISTS preset_mods", [])?;
+        conn.execute("DROP TABLE IF EXISTS presets", [])?;
+        conn.execute(
+            "INSERT INTO settings (key, value) VALUES ('migration_drop_presets', 'true')",
+            [],
+        )?;
+    }
+
+    Ok(())
+}
+
 pub fn init_db(app_data_dir: &Path) -> rusqlite::Result<Connection> {
     std::fs::create_dir_all(app_data_dir).expect("failed to create app data dir");
     let db_path = app_data_dir.join("gmm.db");
     let conn = Connection::open(db_path)?;
     migrate_mod_group_members_unique(&conn)?;
+    migrate_drop_presets(&conn)?;
     conn.execute_batch(schema::SCHEMA)?;
     Ok(conn)
 }

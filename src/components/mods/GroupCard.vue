@@ -1,5 +1,16 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import {
+  PhCaretDown,
+  PhCaretRight,
+  PhStack,
+  PhPencilSimple,
+  PhArrowsOut,
+  PhX,
+} from "@phosphor-icons/vue";
+import VueCard from "@/components/ui/card/VueCard.vue";
+import VueTypography from "@/components/ui/typography/VueTypography.vue";
+import VueSwitch from "@/components/ui/switch/VueSwitch.vue";
 import { useModGroupsStore } from "../../stores/modGroups";
 import type { ModGroup } from "../../types";
 
@@ -31,50 +42,101 @@ async function removeMember(modId: number) {
 }
 
 async function disband() {
-  if (!confirm(`Ungroup "${props.group.name}"? The mods themselves won't be touched.`)) return;
+  if (
+    !confirm(
+      `Ungroup "${props.group.name}"? The mods themselves won't be touched.`,
+    )
+  )
+    return;
   await modGroupsStore.disband(props.group.id);
 }
 </script>
 
 <template>
-  <div class="card mod-card group-card" :class="{ 'mod-card-disabled': !group.isEnabled }">
-    <div class="group-card-header">
-      <button type="button" class="icon-btn" title="Expand" @click="isExpanded = !isExpanded">
-        <i class="fa-solid" :class="isExpanded ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+  <VueCard
+    class="flex flex-col gap-2.5 border-primary/30 p-3.5 transition-opacity"
+    :class="{ 'opacity-50': !group.isEnabled }"
+  >
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        class="cursor-pointer p-1 text-foreground/70 hover:opacity-100"
+        title="Expand"
+        @click="isExpanded = !isExpanded"
+      >
+        <PhCaretDown v-if="isExpanded" :size="16" />
+        <PhCaretRight v-else :size="16" />
       </button>
-      <i class="fa-solid fa-layer-group group-card-icon"></i>
+      <PhStack :size="20" class="text-primary" weight="fill" />
       <input
         v-if="isRenaming"
         v-model="renameValue"
-        class="form-input group-rename-input"
+        class="grow rounded-md border border-white/10 bg-white/5 px-2 py-1 text-foreground outline-none"
         type="text"
         @keydown.enter="confirmRename"
         @blur="confirmRename"
       />
-      <span v-else class="mod-card-name group-card-name" @dblclick="startRename">{{ group.name }}</span>
-      <span class="badge group-card-count">{{ group.members.length }}</span>
+      <VueTypography
+        v-else
+        variant="BodyB"
+        as="span"
+        class="grow cursor-text"
+        @dblclick="startRename"
+      >
+        {{ group.name }}
+      </VueTypography>
+      <span
+        class="rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-background"
+        >{{ group.members.length }}</span
+      >
     </div>
 
-    <div class="mod-card-actions">
-      <label class="switch" :title="group.isEnabled ? 'Enabled' : 'Disabled'">
-        <input type="checkbox" :checked="group.isEnabled" @change="toggle" />
-        <span class="switch-slider"></span>
-      </label>
-      <button type="button" class="icon-btn" title="Rename" @click="startRename">
-        <i class="fa-solid fa-pen"></i>
+    <div class="flex items-center gap-2">
+      <VueSwitch
+        :model-value="group.isEnabled"
+        :title="group.isEnabled ? 'Enabled' : 'Disabled'"
+        class="mr-auto"
+        @update:model-value="toggle"
+      />
+      <button
+        type="button"
+        class="cursor-pointer p-1 text-foreground/70 hover:opacity-100"
+        title="Rename"
+        @click="startRename"
+      >
+        <PhPencilSimple :size="20" weight="fill" />
       </button>
-      <button type="button" class="icon-btn icon-btn-danger" title="Ungroup" @click="disband">
-        <i class="fa-solid fa-object-ungroup"></i>
+      <button
+        type="button"
+        class="cursor-pointer p-1 text-foreground/70 hover:text-destructive"
+        title="Ungroup"
+        @click="disband"
+      >
+        <PhArrowsOut :size="20" weight="fill" color="#ff6b6b" />
       </button>
     </div>
 
-    <ul v-if="isExpanded" class="group-member-list">
-      <li v-for="member in group.members" :key="member.modId" class="group-member-row">
-        <span :class="{ 'group-member-disabled': !member.isEnabled }">{{ member.name }}</span>
-        <button type="button" class="icon-btn" title="Remove from group" @click="removeMember(member.modId)">
-          <i class="fa-solid fa-xmark"></i>
+    <ul
+      v-if="isExpanded"
+      class="mt-2 flex flex-col gap-1.5 border-t border-white/10 pt-2.5"
+    >
+      <li
+        v-for="member in group.members"
+        :key="member.modId"
+        class="flex items-center justify-between text-[13px]"
+      >
+        <span :class="{ 'opacity-50': !member.isEnabled }">{{
+          member.name
+        }}</span>
+        <button
+          type="button"
+          class="cursor-pointer p-1 text-foreground/70 hover:opacity-100"
+          title="Remove from group"
+          @click="removeMember(member.modId)"
+        >
+          <PhX :size="16" />
         </button>
       </li>
     </ul>
-  </div>
+  </VueCard>
 </template>

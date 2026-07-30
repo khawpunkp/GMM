@@ -1,58 +1,152 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
-import { usePresetsStore } from "../../stores/presets";
+import { onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { invoke } from "@tauri-apps/api/core";
+import { PhUsers, PhGear, PhPlay, PhFileArrowDown, PhFolderOpen } from "@phosphor-icons/vue";
+import VueButton from "@/components/ui/button/VueButton.vue";
+import VueTypography from "@/components/ui/typography/VueTypography.vue";
+import { useSettingsStore } from "../../stores/settings";
 import { useUpdaterStore } from "../../stores/updater";
+import { CATEGORY_ICONS } from "../../utils/category";
+import ImportModal from "../mods/ImportModal.vue";
 
 const navItems = [
-  { label: "Dashboard", to: "/", icon: "fa-solid fa-gauge-high" },
-  { label: "Agents", to: "/agents", icon: "fa-solid fa-users" },
-  { label: "NPCs", to: "/categories/npcs", icon: "fa-solid fa-people-group" },
-  { label: "Enemies", to: "/categories/enemies", icon: "fa-solid fa-ghost" },
-  { label: "Weapons", to: "/categories/weapons", icon: "fa-solid fa-shield-halved" },
-  { label: "Objects", to: "/categories/objects", icon: "fa-solid fa-cube" },
-  { label: "UI", to: "/categories/ui", icon: "fa-solid fa-palette" },
-  { label: "Presets", to: "/presets", icon: "fa-solid fa-layer-group" },
-  { label: "Settings", to: "/settings", icon: "fa-solid fa-gear" },
+  { label: "Agents", to: "/agents", icon: PhUsers },
+  { label: "NPCs", to: "/categories/npcs", icon: CATEGORY_ICONS.npcs },
+  { label: "Enemies", to: "/categories/enemies", icon: CATEGORY_ICONS.enemies },
+  { label: "Weapons", to: "/categories/weapons", icon: CATEGORY_ICONS.weapons },
+  { label: "Objects", to: "/categories/objects", icon: CATEGORY_ICONS.objects },
+  { label: "UI", to: "/categories/ui", icon: CATEGORY_ICONS.ui },
+  { label: "Settings", to: "/settings", icon: PhGear },
 ];
 
-const presetsStore = usePresetsStore();
+const route = useRoute();
+const router = useRouter();
+const settingsStore = useSettingsStore();
 const updaterStore = useUpdaterStore();
 
-onMounted(() => {
-  presetsStore.fetchAll();
+function isActive(path: string) {
+  return route.path === path || route.path.startsWith(path + "/");
+}
+
+const gameExecutablePath = ref<string | null>(null);
+const isLaunching = ref(false);
+const launchError = ref<string | null>(null);
+const isImporting = ref(false);
+const openFolderError = ref<string | null>(null);
+
+onMounted(async () => {
+  gameExecutablePath.value = await settingsStore.fetch("game_executable_path");
 });
+
+async function launchGame() {
+  isLaunching.value = true;
+  launchError.value = null;
+  try {
+    await invoke("launch_game");
+  } catch (e) {
+    launchError.value = String(e);
+  } finally {
+    isLaunching.value = false;
+  }
+}
+
+async function openModsFolder() {
+  openFolderError.value = null;
+  try {
+    await invoke("open_mods_folder");
+  } catch (e) {
+    openFolderError.value = String(e);
+  }
+}
 </script>
 
 <template>
-  <aside class="sidebar">
-    <div class="logo">
-      <span>GMM</span>
+  <aside
+    class="flex h-full w-65 shrink-0 flex-col overflow-y-auto border-r border-white/10 bg-card p-5"
+  >
+    <div class="mb-8 flex items-center justify-center">
+      <VueTypography
+        variant="H1B"
+        as="span"
+        class="bg-linear-to-br from-primary to-secondary bg-clip-text text-transparent"
+      >
+        GMM
+      </VueTypography>
     </div>
 
-    <ul class="nav-items">
-      <li v-for="item in navItems" :key="item.to">
-        <RouterLink :to="item.to" class="nav-item" active-class="active">
-          <i :class="item.icon"></i>
+    <VueButton
+      class="w-full justify-center"
+      :disabled="isLaunching || !gameExecutablePath"
+      @click="launchGame"
+    >
+      <PhPlay :size="24" weight="fill" />
+      {{ isLaunching ? "Launching…" : "Quick Launch" }}
+    </VueButton>
+    <VueTypography
+      v-if="launchError"
+      variant="CaptionR"
+      as="p"
+      class="mt-2 mb-2.5 text-destructive"
+    >
+      {{ launchError }}
+    </VueTypography>
+
+    <VueButton
+      variant="outlined"
+      class="mt-2.5 w-full justify-center"
+      @click="isImporting = true"
+    >
+      <PhFileArrowDown :size="24" weight="fill" />
+      Import Mod
+    </VueButton>
+
+    <ul class="mt-6 grow list-none">
+      <li v-for="item in navItems" :key="item.to" class="mb-2">
+        <VueButton
+          type="button"
+          variant="ghost"
+          color="gray"
+          class="w-full justify-start gap-3 rounded-lg px-3.5 py-3"
+          :class="
+            isActive(item.to)
+              ? 'bg-primary text-white shadow-[0_5px_15px_rgba(156,136,255,0.4)]'
+              : 'hover:bg-primary/10'
+          "
+          @click="router.push(item.to)"
+        >
+          <component :is="item.icon" :size="24" weight="fill" />
           {{ item.label }}
-          <span v-if="item.to === '/settings' && updaterStore.update" class="nav-item-badge" title="Update available"></span>
-        </RouterLink>
+          <span
+            v-if="item.to === '/settings' && updaterStore.update"
+            class="ml-auto size-2 rounded-full bg-accent"
+            title="Update available"
+          />
+        </VueButton>
       </li>
     </ul>
 
-    <div class="separator"></div>
+    <VueButton
+      variant="outlined"
+      class="mt-4 w-full justify-center"
+      @click="openModsFolder"
+    >
+      <PhFolderOpen :size="24" weight="fill" />
+      Open Mods Folder
+    </VueButton>
+    <VueTypography
+      v-if="openFolderError"
+      variant="CaptionR"
+      as="p"
+      class="mt-2 text-destructive"
+    >
+      {{ openFolderError }}
+    </VueTypography>
 
-    <div class="preset-section">
-      <div class="preset-header">
-        <span>Presets</span>
-        <RouterLink to="/presets" title="Manage presets">
-          <i class="fa-solid fa-plus"></i>
-        </RouterLink>
-      </div>
-      <p v-if="presetsStore.favorites.length === 0" class="preset-empty">No favorite presets yet.</p>
-      <RouterLink v-for="preset in presetsStore.favorites" :key="preset.id" to="/presets" class="preset">
-        <span>{{ preset.name }}</span>
-        <i class="fa-solid fa-star"></i>
-      </RouterLink>
-    </div>
+    <ImportModal
+      v-if="isImporting"
+      @imported="isImporting = false"
+      @close="isImporting = false"
+    />
   </aside>
 </template>

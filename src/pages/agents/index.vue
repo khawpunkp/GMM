@@ -1,34 +1,237 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
+import { invoke } from "@tauri-apps/api/core";
+import { useRouter } from "vue-router";
+import { PhUsers, PhMagnifyingGlass } from "@phosphor-icons/vue";
+import AgentCard from "../../components/agents/AgentCard.vue";
+import VueButton from "@/components/ui/button/VueButton.vue";
+import VueInput from "@/components/ui/input/VueInput.vue";
+import { VueSelect } from "@/components/ui/select";
+import VueTypography from "@/components/ui/typography/VueTypography.vue";
 import { useAgentsStore } from "../../stores/agents";
-import { resolveAgentImageSrc } from "../../utils/agent";
+import {
+  ATTRIBUTE_ICONS,
+  parseAgentDetails,
+  RANK_ICONS,
+  SPECIALITY_ICONS,
+} from "../../utils/agent";
+import type { Agent, Mod } from "../../types";
+
+const SORT_STORAGE_KEY = "sort_agents";
+
+const RANKS = Object.entries(RANK_ICONS).map(([key, icon]) => ({ key, icon }));
+const ATTRIBUTES = Object.entries(ATTRIBUTE_ICONS).map(([key, icon]) => ({
+  key,
+  icon,
+}));
+const SPECIALITIES = Object.entries(SPECIALITY_ICONS).map(([key, icon]) => ({
+  key,
+  icon,
+}));
+
+const SORT_OPTIONS = [
+  { label: "Name (A-Z)", value: "name-asc" },
+  { label: "Name (Z-A)", value: "name-desc" },
+  { label: "Total Mods (High-Low)", value: "mods-desc" },
+  { label: "Total Mods (Low-High)", value: "mods-asc" },
+  { label: "Enabled Mods (High-Low)", value: "enabled-desc" },
+  { label: "Enabled Mods (Low-High)", value: "enabled-asc" },
+];
 
 const agentsStore = useAgentsStore();
 
-onMounted(() => {
-  agentsStore.fetchAll();
+const search = ref("");
+const sortOption = ref(localStorage.getItem(SORT_STORAGE_KEY) ?? "name-asc");
+const selectedRank = ref("");
+const selectedAttribute = ref("");
+const selectedSpeciality = ref("");
+const modCounts = ref(new Map<number, { total: number; enabled: number }>());
+
+const router = useRouter();
+
+onMounted(async () => {
+  await agentsStore.fetchAll();
+  const allMods = await invoke<Mod[]>("list_mods", {
+    agentId: null,
+    categoryId: null,
+    categoryItemId: null,
+  });
+  const counts = new Map<number, { total: number; enabled: number }>();
+  for (const mod of allMods) {
+    if (mod.agentId === null) continue;
+    const entry = counts.get(mod.agentId) ?? { total: 0, enabled: 0 };
+    entry.total += 1;
+    if (mod.isEnabled) entry.enabled += 1;
+    counts.set(mod.agentId, entry);
+  }
+  modCounts.value = counts;
+});
+
+watch(sortOption, (value) => localStorage.setItem(SORT_STORAGE_KEY, value));
+
+function toggleRank(value: string) {
+  selectedRank.value = selectedRank.value === value ? "" : value;
+}
+function toggleAttribute(value: string) {
+  selectedAttribute.value = selectedAttribute.value === value ? "" : value;
+}
+function toggleSpeciality(value: string) {
+  selectedSpeciality.value = selectedSpeciality.value === value ? "" : value;
+}
+
+function countOf(agent: Agent) {
+  return modCounts.value.get(agent.id) ?? { total: 0, enabled: 0 };
+}
+
+const visibleAgents = computed(() => {
+  const query = search.value.trim().toLowerCase();
+  const filtered = agentsStore.agents.filter((agent) => {
+    if (query && !agent.name.toLowerCase().includes(query)) return false;
+    const details = parseAgentDetails(agent.details);
+    if (selectedRank.value && details.rank !== selectedRank.value) return false;
+    if (
+      selectedAttribute.value &&
+      details.attribute !== selectedAttribute.value
+    )
+      return false;
+    if (
+      selectedSpeciality.value &&
+      details.speciality !== selectedSpeciality.value
+    )
+      return false;
+    return true;
+  });
+
+  return [...filtered].sort((a, b) => {
+    switch (sortOption.value) {
+      case "name-desc":
+        return b.name.localeCompare(a.name);
+      case "mods-desc":
+        return countOf(b).total - countOf(a).total;
+      case "mods-asc":
+        return countOf(a).total - countOf(b).total;
+      case "enabled-desc":
+        return countOf(b).enabled - countOf(a).enabled;
+      case "enabled-asc":
+        return countOf(a).enabled - countOf(b).enabled;
+      default:
+        return a.name.localeCompare(b.name);
+    }
+  });
 });
 </script>
 
 <template>
   <div>
-    <div class="page-header">
-      <h1 class="page-title"><i class="fa-solid fa-users"></i>Agents</h1>
-      <RouterLink to="/agents/new" class="btn btn-primary">+ Add Agent</RouterLink>
+    <div
+      class="mb-6 flex flex-wrap items-center justify-between gap-5 border-b border-white/10 pb-4"
+    >
+      <VueTypography
+        variant="H1B"
+        as="h1"
+        class="mr-auto flex items-center gap-3"
+      >
+        <PhUsers :size="32" weight="fill" />Agents
+      </VueTypography>
+
+      <VueButton type="button" @click="router.push('/agents/new')"
+        >+ Add Agent</VueButton
+      >
+    </div>
+
+    <div
+      class="mb-6 flex flex-wrap items-center gap-5 border-b border-white/10 pb-4"
+    >
+      <div class="flex flex-wrap gap-2 h-12 items-center mt-5.5">
+        <button
+          v-for="rank in RANKS"
+          :key="rank.key"
+          type="button"
+          class="inline-flex items-center rounded-full border border-[#1f1e36] bg-[#1f1e36] p-1.5 transition-colors size-9 justify-center"
+          :class="
+            selectedRank === rank.key
+              ? 'border-white/40 bg-white/10'
+              : 'hover:border-white/40 hover:bg-white/10'
+          "
+          :title="rank.key"
+          @click="toggleRank(rank.key)"
+        >
+          <img :src="rank.icon" alt="" class="size-5 object-contain" />
+        </button>
+      </div>
+      <div class="flex flex-wrap gap-2 h-12 items-center mt-5.5">
+        <button
+          v-for="attribute in ATTRIBUTES"
+          :key="attribute.key"
+          type="button"
+          class="inline-flex items-center rounded-full border border-[#1f1e36] bg-[#1f1e36] p-1.5 transition-colors size-9 justify-center"
+          :class="
+            selectedAttribute === attribute.key
+              ? 'border-white/40 bg-white/10'
+              : 'hover:border-white/40 hover:bg-white/10'
+          "
+          :title="attribute.key"
+          @click="toggleAttribute(attribute.key)"
+        >
+          <img :src="attribute.icon" alt="" class="size-5 object-contain" />
+        </button>
+      </div>
+      <div class="flex flex-wrap gap-2 h-12 items-center mt-5.5">
+        <button
+          v-for="speciality in SPECIALITIES"
+          :key="speciality.key"
+          type="button"
+          class="inline-flex items-center rounded-full border border-[#1f1e36] bg-[#1f1e36] p-1.5 transition-colors size-9 justify-center"
+          :class="
+            selectedSpeciality === speciality.key
+              ? 'border-white/40 bg-white/10'
+              : 'hover:border-white/40 hover:bg-white/10'
+          "
+          :title="speciality.key"
+          @click="toggleSpeciality(speciality.key)"
+        >
+          <img :src="speciality.icon" alt="" class="size-5 object-contain" />
+        </button>
+      </div>
+
+      <VueInput
+        v-model="search"
+        container-class="ml-auto w-full max-w-75"
+        placeholder="Search agents..."
+        label="Search"
+      >
+        <template #iconStart="{ color }"
+          ><PhMagnifyingGlass :size="24" :color="color"
+        /></template>
+      </VueInput>
+      <div class="w-full max-w-75">
+        <VueSelect
+          v-model="sortOption"
+          :options="SORT_OPTIONS"
+          label="Sort by"
+        />
+      </div>
     </div>
 
     <p v-if="agentsStore.isLoading">Loading…</p>
-    <div v-else class="agent-grid">
-      <RouterLink
-        v-for="agent in agentsStore.agents"
+    <p
+      v-else-if="visibleAgents.length === 0"
+      class="text-sm text-muted-foreground"
+    >
+      No agents match your filters.
+    </p>
+    <div
+      v-else
+      class="grid gap-6"
+      style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))"
+    >
+      <AgentCard
+        v-for="agent in visibleAgents"
         :key="agent.slug"
-        :to="`/agents/${agent.slug}`"
-        class="agent-card card"
-      >
-        <img :src="resolveAgentImageSrc(agent.baseImage)" alt="" class="agent-card-image" />
-        <div class="agent-card-name">{{ agent.name }}</div>
-        <span v-if="agent.isBuiltin" class="badge">Built-in</span>
-      </RouterLink>
+        :agent="agent"
+        :total-mods="countOf(agent).total"
+        :enabled-mods="countOf(agent).enabled"
+      />
     </div>
   </div>
 </template>

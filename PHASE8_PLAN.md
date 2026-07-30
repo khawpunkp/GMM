@@ -77,7 +77,8 @@ missing frontend feature, no schema change needed).
   screenshot of the **old** app for context, not a request to change where those buttons live today
   (Launch Game stays on the Dashboard, Import Mod stays a per-page action). Not touching this unless
   asked separately.
-- Mod grouping (virtual groups) on category pages — stays Agents-only, matches Phase 5 scope.
+- ~~Mod grouping (virtual groups) on category pages — stays Agents-only, matches Phase 5 scope.~~
+  **Reversed after user follow-up**: grouping is now on all 5 category tabs too — see Progress.
 
 ## Progress so far
 
@@ -92,7 +93,10 @@ missing frontend feature, no schema change needed).
       resolve_category_subpath` so import and recategorize agree on folder layout
 - [x] `stores/categories.ts` + `Category` TS type; `stores/mods.ts` gained `fetchByCategory` /
       `updateCategory`
-- [x] `pages/categories/[slug].vue` — one route reused for all 5 tabs, flat mod grid, no grouping
+- [x] `pages/categories/[slug].vue` — one route reused for all 5 tabs, flat mod grid
+- [x] Mod grouping ported to the category page too (Select Mods to Group / Group Selected /
+      `GroupCard`), same client-side member-intersection logic as `agents/[slug].vue` — no backend
+      change needed since `mod_groups` was already unscoped by agent/category
 - [x] Sidebar nav items (NPCs/Enemies/Weapons/Objects/UI, each its own icon)
 - [x] `ImportModal.vue` generalized target (`agentId?` / `categoryId?` props, both optional)
 - [x] `ModEditModal.vue` reassignment dropdown — one select covering every Agent + the 5 categories,

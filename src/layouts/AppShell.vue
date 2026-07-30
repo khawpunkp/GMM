@@ -3,9 +3,9 @@ import Sidebar from "../components/layout/Sidebar.vue";
 </script>
 
 <template>
-  <div class="app-container">
+  <div class="flex h-screen bg-black/20">
     <Sidebar />
-    <main class="main-content">
+    <main class="relative flex-1 overflow-y-auto p-6">
       <RouterView />
     </main>
   </div>

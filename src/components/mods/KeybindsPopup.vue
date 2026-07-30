@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from "vue";
 import { invoke } from "@tauri-apps/api/core";
+import VueButton from "@/components/ui/button/VueButton.vue";
+import VueInput from "@/components/ui/input/VueInput.vue";
+import Label from "@/components/ui/input/Label.vue";
+import { VueSelect } from "@/components/ui/select";
+import VueTypography from "@/components/ui/typography/VueTypography.vue";
 import type { KeybindInfo, PersistVar } from "../../types";
 
 const props = defineProps<{ modId: number }>();
@@ -48,56 +53,56 @@ async function saveVar(varName: string, rawValue: string) {
 </script>
 
 <template>
-  <div class="modal-overlay" @click.self="emit('close')">
-    <div class="modal-content card">
-      <h2 class="settings-section-title">Keybinds</h2>
+  <div class="fixed inset-0 z-100 flex items-center justify-center bg-black/60" @click.self="emit('close')">
+    <div class="w-11/12 max-w-120 max-h-[85vh] overflow-y-auto rounded-2xl border border-white/10 bg-card p-6">
+      <VueTypography variant="TitleB" as="h2" class="mb-2.5">Keybinds</VueTypography>
 
       <p v-if="isLoading">Loading…</p>
       <template v-else-if="errorMessage">
-        <p class="settings-error">{{ errorMessage }}</p>
+        <VueTypography variant="CaptionR" as="p" class="text-destructive">{{ errorMessage }}</VueTypography>
       </template>
       <template v-else>
-        <p v-if="keybinds.length === 0" class="settings-value">
+        <VueTypography v-if="keybinds.length === 0" variant="CaptionR" as="p" class="text-muted-foreground">
           No keybinds found — this mod's INI has no "; Constants" section, or none of its [Key...]
           sections have a value set yet.
-        </p>
-        <ul v-else class="keybind-list">
-          <li v-for="kb in keybinds" :key="kb.title" class="keybind-row">
-            <span class="keybind-title">{{ kb.title }}</span>
-            <span class="keybind-key">{{ kb.key }}</span>
+        </VueTypography>
+        <ul v-else class="mb-5 mt-2.5 flex flex-col gap-2">
+          <li v-for="kb in keybinds" :key="kb.title" class="flex items-center justify-between rounded-md bg-white/5 px-3 py-2 text-[13px]">
+            <span>{{ kb.title }}</span>
+            <span class="rounded bg-black/30 px-2 py-0.5 font-mono">{{ kb.key }}</span>
           </li>
         </ul>
 
         <template v-if="persistVars.length > 0">
-          <h2 class="settings-section-title">Toggle memory</h2>
-          <div v-for="pv in persistVars" :key="pv.name" class="form-group">
-            <label class="form-label" :for="`persist-${pv.name}`">{{ pv.name }}</label>
-            <select
+          <VueTypography variant="TitleB" as="h2" class="mb-2.5">Toggle memory</VueTypography>
+          <div v-for="pv in persistVars" :key="pv.name" class="mb-4.5">
+            <VueSelect
               v-if="pv.options.length > 0"
-              :id="`persist-${pv.name}`"
-              class="form-input"
-              :value="pv.value"
+              :model-value="pv.value"
+              :label="pv.name"
+              :options="pv.options.map((opt) => ({ label: String(opt), value: opt }))"
               :disabled="savingVars[pv.name]"
-              @change="saveVar(pv.name, ($event.target as HTMLSelectElement).value)"
-            >
-              <option v-for="opt in pv.options" :key="opt" :value="opt">{{ opt }}</option>
-            </select>
-            <input
-              v-else
-              :id="`persist-${pv.name}`"
-              class="form-input"
-              type="number"
-              :value="pv.value"
-              :disabled="savingVars[pv.name]"
-              @change="saveVar(pv.name, ($event.target as HTMLInputElement).value)"
+              @update:model-value="(value) => saveVar(pv.name, String(value))"
             />
-            <p v-if="varErrors[pv.name]" class="settings-error">{{ varErrors[pv.name] }}</p>
+            <template v-else>
+              <Label :for="`persist-${pv.name}`">{{ pv.name }}</Label>
+              <VueInput
+                :id="`persist-${pv.name}`"
+                type="number"
+                :model-value="pv.value"
+                :disabled="savingVars[pv.name]"
+                @change="saveVar(pv.name, ($event.target as HTMLInputElement).value)"
+              />
+            </template>
+            <VueTypography v-if="varErrors[pv.name]" variant="CaptionR" as="p" class="mt-1.5 text-destructive">
+              {{ varErrors[pv.name] }}
+            </VueTypography>
           </div>
         </template>
       </template>
 
-      <div class="form-actions">
-        <button type="button" class="btn btn-secondary" @click="emit('close')">Close</button>
+      <div class="flex items-center justify-end">
+        <VueButton type="button" variant="outlined" @click="emit('close')">Close</VueButton>
       </div>
     </div>
   </div>

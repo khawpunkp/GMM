@@ -94,12 +94,6 @@ export interface ImportArchiveRequest {
   author: string | null;
 }
 
-export interface Preset {
-  id: number;
-  name: string;
-  isFavorite: boolean;
-}
-
 export interface KeybindInfo {
   title: string;
   key: string;
