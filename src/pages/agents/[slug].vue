@@ -1,27 +1,42 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import AgentForm from "../../components/agents/AgentForm.vue";
+import ModCard from "../../components/mods/ModCard.vue";
+import ModEditModal from "../../components/mods/ModEditModal.vue";
 import { useAgentsStore } from "../../stores/agents";
-import type { Agent, AgentInput } from "../../types";
+import { useModsStore } from "../../stores/mods";
+import type { Agent, AgentInput, Mod, ModInput } from "../../types";
 
 const route = useRoute("/agents/[slug]");
 const router = useRouter();
 const agentsStore = useAgentsStore();
+const modsStore = useModsStore();
 
 const agent = ref<Agent | null>(null);
 const isLoading = ref(true);
 const errorMessage = ref<string | null>(null);
+const editingMod = ref<Mod | null>(null);
 
 onMounted(async () => {
   try {
     agent.value = await agentsStore.fetchOne(route.params.slug);
+    await modsStore.fetchByAgent(agent.value.id);
   } catch (e) {
     errorMessage.value = String(e);
   } finally {
     isLoading.value = false;
   }
 });
+
+watch(
+  () => route.params.slug,
+  async (slug) => {
+    if (!slug) return;
+    agent.value = await agentsStore.fetchOne(slug);
+    await modsStore.fetchByAgent(agent.value.id);
+  }
+);
 
 async function handleSubmit(input: AgentInput) {
   if (!agent.value) return;
@@ -34,6 +49,17 @@ async function handleDelete() {
   await agentsStore.remove(agent.value.slug);
   router.push("/agents");
 }
+
+async function handleModSubmit(input: ModInput) {
+  if (!editingMod.value) return;
+  await modsStore.update(editingMod.value.id, input);
+  editingMod.value = null;
+}
+
+async function handleModDelete(mod: Mod) {
+  if (!confirm(`Delete "${mod.name}"? This removes the mod folder from disk and cannot be undone.`)) return;
+  await modsStore.remove(mod.id);
+}
 </script>
 
 <template>
@@ -44,17 +70,35 @@ async function handleDelete() {
 
     <p v-if="isLoading">Loading…</p>
     <p v-else-if="errorMessage">{{ errorMessage }}</p>
-    <AgentForm
-      v-else-if="agent"
-      :key="agent.slug"
-      :initial-agent="agent"
-      submit-label="Save Changes"
-      @submit="handleSubmit"
-    >
-      <template #actions>
-        <span v-if="agent.isBuiltin" class="builtin-note">Built-in agent — cannot be deleted</span>
-        <button v-else type="button" class="btn btn-danger" @click="handleDelete">Delete</button>
-      </template>
-    </AgentForm>
+    <template v-else-if="agent">
+      <AgentForm :key="agent.slug" :initial-agent="agent" submit-label="Save Changes" @submit="handleSubmit">
+        <template #actions>
+          <span v-if="agent.isBuiltin" class="builtin-note">Built-in agent — cannot be deleted</span>
+          <button v-else type="button" class="btn btn-danger" @click="handleDelete">Delete</button>
+        </template>
+      </AgentForm>
+
+      <div class="mods-section">
+        <h2 class="settings-section-title">Mods</h2>
+        <p v-if="modsStore.isLoading">Loading mods…</p>
+        <p v-else-if="modsStore.mods.length === 0" class="settings-value">No mods for this agent yet.</p>
+        <div v-else class="mod-grid">
+          <ModCard
+            v-for="mod in modsStore.mods"
+            :key="mod.id"
+            :mod="mod"
+            @edit="editingMod = $event"
+            @delete="handleModDelete"
+          />
+        </div>
+      </div>
+    </template>
+
+    <ModEditModal
+      v-if="editingMod"
+      :mod="editingMod"
+      @submit="handleModSubmit"
+      @close="editingMod = null"
+    />
   </div>
 </template>

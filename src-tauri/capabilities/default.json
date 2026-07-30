@@ -19,7 +19,7 @@
       "identifier": "fs:scope",
       "allow": ["$APPDATA/**", "$APPLOCALDATA/**"]
     },
-    "shell:allow-open",
+    "opener:default",
     "updater:default"
   ]
 }

@@ -1,6 +1,7 @@
 mod commands;
 mod db;
 mod models;
+mod mods;
 mod scanner;
 
 use std::sync::Mutex;
@@ -13,6 +14,7 @@ pub fn run() {
     let builder = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init());
 
     #[cfg(desktop)]
@@ -39,6 +41,11 @@ pub fn run() {
             commands::scanner::scan_mods_directory,
             commands::scanner::analyze_archive,
             commands::scanner::import_archive,
+            commands::mods::list_mods,
+            commands::mods::toggle_mod_enabled,
+            commands::mods::update_mod_info,
+            commands::mods::delete_mod,
+            commands::mods::open_mod_folder,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

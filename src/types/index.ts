@@ -35,6 +35,14 @@ export interface Mod {
   folderName: string;
   imageFilename: string | null;
   author: string | null;
+  isEnabled: boolean;
+}
+
+export interface ModInput {
+  name: string;
+  description: string | null;
+  author: string | null;
+  imageDataUrl: string | null;
 }
 
 export interface ModGroup {

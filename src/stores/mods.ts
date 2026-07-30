@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
-import type { Mod, ModGroup } from "../types";
+import { invoke } from "@tauri-apps/api/core";
+import type { Mod, ModGroup, ModInput } from "../types";
 
 export const useModsStore = defineStore("mods", {
   state: () => ({
@@ -7,4 +8,33 @@ export const useModsStore = defineStore("mods", {
     groups: [] as ModGroup[],
     isLoading: false,
   }),
+  actions: {
+    async fetchByAgent(agentId: number) {
+      this.isLoading = true;
+      try {
+        this.mods = await invoke<Mod[]>("list_mods", { agentId, categoryId: null, categoryItemId: null });
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async toggle(modId: number) {
+      const isEnabled = await invoke<boolean>("toggle_mod_enabled", { modId });
+      const mod = this.mods.find((m) => m.id === modId);
+      if (mod) mod.isEnabled = isEnabled;
+      return isEnabled;
+    },
+    async update(modId: number, input: ModInput) {
+      const updated = await invoke<Mod>("update_mod_info", { modId, input });
+      const index = this.mods.findIndex((m) => m.id === modId);
+      if (index !== -1) this.mods[index] = updated;
+      return updated;
+    },
+    async remove(modId: number) {
+      await invoke("delete_mod", { modId });
+      this.mods = this.mods.filter((m) => m.id !== modId);
+    },
+    async openFolder(modId: number) {
+      await invoke("open_mod_folder", { modId });
+    },
+  },
 });
