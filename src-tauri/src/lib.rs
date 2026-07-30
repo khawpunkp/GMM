@@ -1,6 +1,7 @@
 mod commands;
 mod db;
 mod models;
+mod scanner;
 
 use std::sync::Mutex;
 use tauri::Manager;
@@ -33,6 +34,11 @@ pub fn run() {
             commands::agents::update_agent,
             commands::agents::delete_agent,
             commands::images::read_image_as_data_url,
+            commands::settings::get_setting,
+            commands::settings::set_setting,
+            commands::scanner::scan_mods_directory,
+            commands::scanner::analyze_archive,
+            commands::scanner::import_archive,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
