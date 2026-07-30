@@ -5,6 +5,7 @@ mod mod_groups;
 mod models;
 mod mods;
 mod presets;
+mod process_check;
 mod scanner;
 
 use std::sync::Mutex;
@@ -51,6 +52,8 @@ pub fn run() {
             commands::mods::delete_mod,
             commands::mods::open_mod_folder,
             commands::mods::get_mod_keybinds,
+            commands::keybinds::get_mod_persist_vars,
+            commands::keybinds::set_mod_persist_var,
             commands::presets::list_presets,
             commands::presets::create_preset,
             commands::presets::overwrite_preset,

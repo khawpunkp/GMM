@@ -98,3 +98,9 @@ export interface KeybindInfo {
   title: string;
   key: string;
 }
+
+export interface PersistVar {
+  name: string;
+  value: number;
+  options: number[];
+}
