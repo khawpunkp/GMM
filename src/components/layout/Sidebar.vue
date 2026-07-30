@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 import { usePresetsStore } from "../../stores/presets";
+import { useUpdaterStore } from "../../stores/updater";
 
 const navItems = [
   { label: "Dashboard", to: "/", icon: "fa-solid fa-gauge-high" },
@@ -10,6 +11,7 @@ const navItems = [
 ];
 
 const presetsStore = usePresetsStore();
+const updaterStore = useUpdaterStore();
 
 onMounted(() => {
   presetsStore.fetchAll();
@@ -27,6 +29,7 @@ onMounted(() => {
         <RouterLink :to="item.to" class="nav-item" active-class="active">
           <i :class="item.icon"></i>
           {{ item.label }}
+          <span v-if="item.to === '/settings' && updaterStore.update" class="nav-item-badge" title="Update available"></span>
         </RouterLink>
       </li>
     </ul>

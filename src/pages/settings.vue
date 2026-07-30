@@ -2,10 +2,14 @@
 import { onMounted, onUnmounted, ref } from "vue";
 import { open } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
+import { getVersion } from "@tauri-apps/api/app";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { useSettingsStore } from "../stores/settings";
+import { useUpdaterStore } from "../stores/updater";
+import UpdateModal from "../components/UpdateModal.vue";
 
 const settingsStore = useSettingsStore();
+const updaterStore = useUpdaterStore();
 
 const modsFolderPath = ref<string | null>(null);
 const isScanning = ref(false);
@@ -14,6 +18,10 @@ const errorMessage = ref<string | null>(null);
 
 const gameExecutablePath = ref<string | null>(null);
 
+const currentVersion = ref<string>("");
+const showUpdateModal = ref(false);
+const noUpdateFound = ref(false);
+
 let unlistenProgress: UnlistenFn | null = null;
 let unlistenComplete: UnlistenFn | null = null;
 let unlistenError: UnlistenFn | null = null;
@@ -21,6 +29,7 @@ let unlistenError: UnlistenFn | null = null;
 onMounted(async () => {
   modsFolderPath.value = await settingsStore.fetch("mods_folder_path");
   gameExecutablePath.value = await settingsStore.fetch("game_executable_path");
+  currentVersion.value = await getVersion();
 
   unlistenProgress = await listen<{ processed: number; currentPath: string | null; message: string }>(
     "scan-progress",
@@ -80,6 +89,16 @@ async function chooseGameExecutable() {
     gameExecutablePath.value = path;
   }
 }
+
+async function checkForUpdates() {
+  noUpdateFound.value = false;
+  const update = await updaterStore.check();
+  if (update) {
+    showUpdateModal.value = true;
+  } else if (!updaterStore.errorMessage) {
+    noUpdateFound.value = true;
+  }
+}
 </script>
 
 <template>
@@ -108,5 +127,22 @@ async function chooseGameExecutable() {
         <button type="button" class="btn btn-secondary" @click="chooseGameExecutable">Choose Executable</button>
       </div>
     </div>
+
+    <div class="card settings-section">
+      <h2 class="settings-section-title">Updates</h2>
+      <p class="settings-value">Currently running v{{ currentVersion }}</p>
+      <div class="form-actions settings-actions">
+        <button type="button" class="btn btn-secondary" :disabled="updaterStore.isChecking" @click="checkForUpdates">
+          {{ updaterStore.isChecking ? "Checking…" : "Check for Updates" }}
+        </button>
+        <button v-if="updaterStore.update" type="button" class="btn btn-primary" @click="showUpdateModal = true">
+          Update Available: v{{ updaterStore.update.version }}
+        </button>
+      </div>
+      <p v-if="noUpdateFound" class="settings-status">You're up to date.</p>
+      <p v-if="updaterStore.errorMessage" class="settings-error">{{ updaterStore.errorMessage }}</p>
+    </div>
+
+    <UpdateModal v-if="showUpdateModal" @close="showUpdateModal = false" />
   </div>
 </template>
