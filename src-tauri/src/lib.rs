@@ -2,6 +2,7 @@ mod commands;
 mod db;
 mod models;
 mod mods;
+mod presets;
 mod scanner;
 
 use std::sync::Mutex;
@@ -46,6 +47,12 @@ pub fn run() {
             commands::mods::update_mod_info,
             commands::mods::delete_mod,
             commands::mods::open_mod_folder,
+            commands::presets::list_presets,
+            commands::presets::create_preset,
+            commands::presets::overwrite_preset,
+            commands::presets::delete_preset,
+            commands::presets::toggle_preset_favorite,
+            commands::presets::apply_preset,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -158,7 +158,8 @@ body {
   align-items: center;
 }
 
-.preset-header button {
+.preset-header button,
+.preset-header a {
   background-color: var(--primary);
   border: none;
   color: white;
@@ -170,9 +171,11 @@ body {
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  text-decoration: none;
 }
 
-.preset-header button:hover {
+.preset-header button:hover,
+.preset-header a:hover {
   background-color: var(--secondary);
 }
 
@@ -180,6 +183,27 @@ body {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.4);
   padding: 4px 2px;
+}
+
+.preset {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: var(--light);
+  text-decoration: none;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.preset:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.preset i {
+  color: var(--accent);
+  font-size: 12px;
 }
 
 /* Main Content */
@@ -611,4 +635,39 @@ body {
   max-height: 85vh;
   overflow-y: auto;
   padding: 25px;
+}
+
+/* Presets page */
+.preset-name-input {
+  max-width: 240px;
+}
+
+.preset-list {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.preset-row {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.preset-row .preset-name {
+  flex-grow: 1;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.preset-row .preset-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.preset-favorite-active {
+  color: var(--accent);
+  opacity: 1;
 }

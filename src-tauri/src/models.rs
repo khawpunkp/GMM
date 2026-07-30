@@ -49,3 +49,11 @@ pub struct ModInput {
     /// convention the scanner already uses), not stored as a data URL in the DB like agent images.
     pub image_data_url: Option<String>,
 }
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Preset {
+    pub id: i64,
+    pub name: String,
+    pub is_favorite: bool,
+}

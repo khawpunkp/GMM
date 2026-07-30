@@ -1,10 +1,19 @@
 <script setup lang="ts">
+import { onMounted } from "vue";
+import { usePresetsStore } from "../../stores/presets";
+
 const navItems = [
   { label: "Dashboard", to: "/", icon: "fa-solid fa-gauge-high" },
   { label: "Agents", to: "/agents", icon: "fa-solid fa-users" },
   { label: "Presets", to: "/presets", icon: "fa-solid fa-layer-group" },
   { label: "Settings", to: "/settings", icon: "fa-solid fa-gear" },
 ];
+
+const presetsStore = usePresetsStore();
+
+onMounted(() => {
+  presetsStore.fetchAll();
+});
 </script>
 
 <template>
@@ -27,11 +36,15 @@ const navItems = [
     <div class="preset-section">
       <div class="preset-header">
         <span>Presets</span>
-        <button type="button" title="New preset">
+        <RouterLink to="/presets" title="Manage presets">
           <i class="fa-solid fa-plus"></i>
-        </button>
+        </RouterLink>
       </div>
-      <p class="preset-empty">No presets yet.</p>
+      <p v-if="presetsStore.favorites.length === 0" class="preset-empty">No favorite presets yet.</p>
+      <RouterLink v-for="preset in presetsStore.favorites" :key="preset.id" to="/presets" class="preset">
+        <span>{{ preset.name }}</span>
+        <i class="fa-solid fa-star"></i>
+      </RouterLink>
     </div>
   </aside>
 </template>

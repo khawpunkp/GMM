@@ -51,14 +51,8 @@ export interface ModGroup {
   modIds: number[];
 }
 
-export interface PresetModEntry {
-  modId: number;
-  isEnabled: boolean;
-}
-
 export interface Preset {
   id: number;
   name: string;
   isFavorite: boolean;
-  mods: PresetModEntry[];
 }

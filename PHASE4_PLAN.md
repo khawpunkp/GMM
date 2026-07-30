@@ -133,10 +133,31 @@ folders, so pointed at one specific mod's folder it finds zero mods inside it (t
 recurse into). You'll want to repoint it at the `...\ZZMI\Mods` folder itself via the Settings page,
 then Scan Now, to see real mod cards on the agent pages.
 
+## 4b verification
+
+**Automated** (`cargo test`, all 5 pass across the whole crate now):
+- `apply_preset_restores_snapshotted_state` — creates a preset (snapshotting 2 synthetic mods, both
+  enabled), disables one on disk, applies the preset, confirms it's toggled back to match the
+  snapshot and confirms the untouched mod stays untouched.
+- `overwrite_preset_replaces_the_snapshot` — changes disk state, overwrites the preset, confirms
+  re-applying afterward is a no-op against the new snapshot.
+
+`cargo check` and `vue-tsc -b` both clean.
+
+**Added beyond the original plan doc**: wired the Sidebar's `preset-section` (a static placeholder
+since Phase 1) to show real favorite presets (top 3, matching the old app's `get_favorite_presets`
+convention) instead of leaving it as dead UI once real presets existed to show. Also fixed
+`types/index.ts`'s `Preset` interface — it had a speculative `mods: PresetModEntry[]` field from
+Phase 1 that never matched what the backend actually returns; removed it along with the now-unused
+`PresetModEntry` type.
+
+**Manual, flagged for you**: actually clicking through create/apply/overwrite/delete/favorite and
+watching the live apply-progress status line.
+
 ## Progress so far
 
 - [x] Staging decision confirmed: 4a → 4b → 4c → 4d, each its own commit
 - [x] 4a: mod cards + enable/disable
-- [ ] 4b: presets
+- [x] 4b: presets
 - [ ] 4c: import modal
 - [ ] 4d: keybinds popup + launcher
