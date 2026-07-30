@@ -30,6 +30,13 @@ pub fn list_mods(
 }
 
 #[tauri::command]
+pub fn list_uncategorized_mods(state: State<DbState>) -> Result<Vec<ModWithState>, String> {
+    let mods_path = get_mods_folder(&state)?;
+    let conn = state.0.lock().map_err(|e| e.to_string())?;
+    mods::list_uncategorized_mods(&conn, &mods_path)
+}
+
+#[tauri::command]
 pub fn toggle_mod_enabled(mod_id: i64, state: State<DbState>) -> Result<bool, String> {
     let mods_path = get_mods_folder(&state)?;
     let conn = state.0.lock().map_err(|e| e.to_string())?;

@@ -48,6 +48,7 @@ pub fn run() {
             commands::scanner::analyze_archive,
             commands::scanner::import_archive,
             commands::mods::list_mods,
+            commands::mods::list_uncategorized_mods,
             commands::mods::toggle_mod_enabled,
             commands::mods::update_mod_info,
             commands::mods::update_mod_category,

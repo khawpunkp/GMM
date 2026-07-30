@@ -25,6 +25,14 @@ export const useModsStore = defineStore("mods", {
         this.isLoading = false;
       }
     },
+    async fetchUncategorized() {
+      this.isLoading = true;
+      try {
+        this.mods = await invoke<Mod[]>("list_uncategorized_mods");
+      } finally {
+        this.isLoading = false;
+      }
+    },
     async updateCategory(modId: number, target: { agentId?: number; categoryId?: number }) {
       const updated = await invoke<Mod>("update_mod_category", {
         modId,

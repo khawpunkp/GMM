@@ -34,7 +34,7 @@ const specialityIcon = computed(() =>
       class="relative flex flex-col overflow-hidden p-0 no-underline transition-[transform,box-shadow] duration-300 hover:-translate-y-1.25 hover:shadow-[0_10px_25px_rgba(0,0,0,0.3)] hover:border-primary/30"
     >
       <div
-        class="absolute top-2.5 right-2.5 z-2 flex flex-col items-end gap-1.5"
+        class="absolute top-2.5 right-2.5 flex flex-col items-end gap-1.5 z-20"
       >
         <span
           v-if="totalMods > 0"

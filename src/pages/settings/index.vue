@@ -137,22 +137,6 @@ async function checkForUpdates() {
               Choose Folder
             </VueButton>
           </div>
-          <VueTypography
-            v-if="statusMessage"
-            variant="CaptionR"
-            as="p"
-            class="mt-3.5 text-muted-foreground"
-          >
-            {{ statusMessage }}
-          </VueTypography>
-          <VueTypography
-            v-if="errorMessage"
-            variant="CaptionR"
-            as="p"
-            class="mt-3.5 text-destructive"
-          >
-            {{ errorMessage }}
-          </VueTypography>
         </div>
 
         <div class="grid grid-cols-12 items-center">
@@ -185,6 +169,22 @@ async function checkForUpdates() {
             >
             <VueTypography variant="BodyR" as="p" class="text-muted-foreground">
               Add new mods and remove deleted mods from the database
+            </VueTypography>
+            <VueTypography
+              v-if="statusMessage"
+              variant="CaptionR"
+              as="p"
+              class="mt-3.5 text-accent"
+            >
+              {{ statusMessage }}
+            </VueTypography>
+            <VueTypography
+              v-if="errorMessage"
+              variant="CaptionR"
+              as="p"
+              class="mt-3.5 text-destructive"
+            >
+              {{ errorMessage }}
             </VueTypography>
           </div>
           <div class="flex items-center justify-start gap-3">

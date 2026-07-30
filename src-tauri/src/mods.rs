@@ -112,6 +112,25 @@ pub fn list_mods(
         .collect())
 }
 
+pub fn list_uncategorized_mods(
+    conn: &Connection,
+    base_mods_path: &Path,
+) -> Result<Vec<ModWithState>, String> {
+    let sql = format!("SELECT {} FROM {} ORDER BY m.name", MOD_COLUMNS, MOD_FROM);
+    let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
+    let rows = stmt.query_map([], row_to_mod).map_err(|e| e.to_string())?;
+    let all: Vec<ModWithState> = rows.collect::<Result<_, _>>().map_err(|e| e.to_string())?;
+
+    Ok(all
+        .into_iter()
+        .filter(|m| m.agent_id.is_none() && m.category_id.is_none())
+        .map(|mut m| {
+            m.is_enabled = is_mod_enabled(base_mods_path, &m.folder_name).unwrap_or(false);
+            m
+        })
+        .collect())
+}
+
 pub fn get_mod(conn: &Connection, base_mods_path: &Path, mod_id: i64) -> Result<ModWithState, String> {
     let sql = format!("SELECT {} FROM {} WHERE m.id = ?1", MOD_COLUMNS, MOD_FROM);
     let mut m = conn

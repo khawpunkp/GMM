@@ -2,7 +2,7 @@
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { invoke } from "@tauri-apps/api/core";
-import { PhUsers, PhGear, PhPlay, PhFileArrowDown, PhFolderOpen } from "@phosphor-icons/vue";
+import { PhUsers, PhGear, PhPlay, PhFileArrowDown, PhFolderOpen, PhDotsThreeOutline } from "@phosphor-icons/vue";
 import VueButton from "@/components/ui/button/VueButton.vue";
 import VueTypography from "@/components/ui/typography/VueTypography.vue";
 import { useSettingsStore } from "../../stores/settings";
@@ -17,6 +17,7 @@ const navItems = [
   { label: "Weapons", to: "/categories/weapons", icon: CATEGORY_ICONS.weapons },
   { label: "Objects", to: "/categories/objects", icon: CATEGORY_ICONS.objects },
   { label: "UI", to: "/categories/ui", icon: CATEGORY_ICONS.ui },
+  { label: "Other", to: "/other", icon: PhDotsThreeOutline },
   { label: "Settings", to: "/settings", icon: PhGear },
 ];
 
