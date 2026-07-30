@@ -1,6 +1,7 @@
 mod commands;
 mod db;
 mod keybinds;
+mod mod_groups;
 mod models;
 mod mods;
 mod presets;
@@ -56,6 +57,13 @@ pub fn run() {
             commands::presets::toggle_preset_favorite,
             commands::presets::apply_preset,
             commands::launcher::launch_game,
+            commands::mod_groups::list_mod_groups,
+            commands::mod_groups::create_mod_group,
+            commands::mod_groups::add_mod_to_group,
+            commands::mod_groups::remove_mod_from_group,
+            commands::mod_groups::rename_mod_group,
+            commands::mod_groups::delete_mod_group,
+            commands::mod_groups::toggle_mod_group,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

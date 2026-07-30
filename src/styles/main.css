@@ -732,3 +732,72 @@ body {
   padding: 2px 8px;
   border-radius: 4px;
 }
+
+/* Mod selection mode */
+.mod-card {
+  position: relative;
+}
+
+.mod-card-select-checkbox {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 18px;
+  height: 18px;
+  z-index: 1;
+  cursor: pointer;
+}
+
+.mod-card-selected {
+  outline: 2px solid var(--primary);
+}
+
+/* Group card */
+.group-card {
+  border-color: rgba(156, 136, 255, 0.3);
+}
+
+.group-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.group-card-icon {
+  color: var(--primary);
+}
+
+.group-card-name {
+  flex-grow: 1;
+  cursor: text;
+}
+
+.group-rename-input {
+  flex-grow: 1;
+  padding: 4px 8px;
+}
+
+.group-card-count {
+  position: static;
+}
+
+.group-member-list {
+  list-style: none;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.group-member-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+
+.group-member-disabled {
+  opacity: 0.5;
+}

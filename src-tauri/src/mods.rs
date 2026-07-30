@@ -9,8 +9,9 @@ use crate::scanner::deduce::DISABLED_PREFIX;
 
 const MOD_PREVIEW_BASENAME: &str = "mod_preview";
 
-const MOD_COLUMNS: &str =
-    "id, agent_id, category_id, category_item_id, name, description, folder_name, image_filename, author";
+const MOD_COLUMNS: &str = "m.id, m.agent_id, m.category_id, m.category_item_id, m.name, m.description, \
+     m.folder_name, m.image_filename, m.author, mgm.group_id";
+const MOD_FROM: &str = "mods m LEFT JOIN mod_group_members mgm ON mgm.mod_id = m.id";
 
 fn enabled_disabled_paths(base_mods_path: &Path, folder_name: &str) -> (PathBuf, PathBuf) {
     let relative = PathBuf::from(folder_name);
@@ -80,6 +81,7 @@ fn row_to_mod(row: &rusqlite::Row) -> rusqlite::Result<ModWithState> {
         image_filename: row.get(7)?,
         author: row.get(8)?,
         is_enabled: false,
+        group_id: row.get(9)?,
     })
 }
 
@@ -90,7 +92,7 @@ pub fn list_mods(
     category_id: Option<i64>,
     category_item_id: Option<i64>,
 ) -> Result<Vec<ModWithState>, String> {
-    let sql = format!("SELECT {} FROM mods ORDER BY name", MOD_COLUMNS);
+    let sql = format!("SELECT {} FROM {} ORDER BY m.name", MOD_COLUMNS, MOD_FROM);
     let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
     let rows = stmt.query_map([], row_to_mod).map_err(|e| e.to_string())?;
     let all: Vec<ModWithState> = rows.collect::<Result<_, _>>().map_err(|e| e.to_string())?;
@@ -110,7 +112,7 @@ pub fn list_mods(
 }
 
 pub fn get_mod(conn: &Connection, base_mods_path: &Path, mod_id: i64) -> Result<ModWithState, String> {
-    let sql = format!("SELECT {} FROM mods WHERE id = ?1", MOD_COLUMNS);
+    let sql = format!("SELECT {} FROM {} WHERE m.id = ?1", MOD_COLUMNS, MOD_FROM);
     let mut m = conn
         .query_row(&sql, params![mod_id], row_to_mod)
         .map_err(|e| e.to_string())?;

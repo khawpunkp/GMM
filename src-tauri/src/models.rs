@@ -36,6 +36,7 @@ pub struct ModWithState {
     pub image_filename: Option<String>,
     pub author: Option<String>,
     pub is_enabled: bool,
+    pub group_id: Option<i64>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -63,4 +64,22 @@ pub struct Preset {
 pub struct KeybindInfo {
     pub title: String,
     pub key: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ModGroupMember {
+    pub mod_id: i64,
+    pub name: String,
+    pub folder_name: String,
+    pub is_enabled: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ModGroupWithMembers {
+    pub id: i64,
+    pub name: String,
+    pub is_enabled: bool,
+    pub members: Vec<ModGroupMember>,
 }

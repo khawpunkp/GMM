@@ -5,11 +5,16 @@ import { useSettingsStore } from "../../stores/settings";
 import { useModsStore } from "../../stores/mods";
 import type { Mod } from "../../types";
 
-const props = defineProps<{ mod: Mod }>();
+const props = defineProps<{
+  mod: Mod;
+  selectMode?: boolean;
+  selected?: boolean;
+}>();
 const emit = defineEmits<{
   edit: [mod: Mod];
   delete: [mod: Mod];
   keybinds: [mod: Mod];
+  "toggle-select": [mod: Mod];
 }>();
 
 const settingsStore = useSettingsStore();
@@ -38,13 +43,18 @@ function openFolder() {
 </script>
 
 <template>
-  <div class="card mod-card" :class="{ 'mod-card-disabled': !mod.isEnabled }">
+  <div
+    class="card mod-card"
+    :class="{ 'mod-card-disabled': !mod.isEnabled, 'mod-card-selected': selectMode && selected }"
+    @click="selectMode && emit('toggle-select', mod)"
+  >
+    <input v-if="selectMode" type="checkbox" class="mod-card-select-checkbox" :checked="selected" readonly />
     <img :src="imageSrc ?? '/images/placeholder.jpg'" alt="" class="mod-card-image" />
     <div class="mod-card-body">
       <div class="mod-card-name">{{ mod.name }}</div>
       <div v-if="mod.author" class="mod-card-author">by {{ mod.author }}</div>
     </div>
-    <div class="mod-card-actions">
+    <div v-if="!selectMode" class="mod-card-actions">
       <label class="switch" :title="mod.isEnabled ? 'Enabled' : 'Disabled'">
         <input type="checkbox" :checked="mod.isEnabled" @change="toggle" />
         <span class="switch-slider"></span>

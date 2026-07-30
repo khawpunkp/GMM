@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS mod_groups (
 
 CREATE TABLE IF NOT EXISTS mod_group_members (
     group_id INTEGER NOT NULL,
-    mod_id   INTEGER NOT NULL,
+    mod_id   INTEGER NOT NULL UNIQUE, -- a mod belongs to at most one group
     PRIMARY KEY (group_id, mod_id),
     FOREIGN KEY (group_id) REFERENCES mod_groups(id) ON DELETE CASCADE,
     FOREIGN KEY (mod_id)   REFERENCES mods(id)        ON DELETE CASCADE

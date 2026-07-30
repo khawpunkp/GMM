@@ -36,6 +36,7 @@ export interface Mod {
   imageFilename: string | null;
   author: string | null;
   isEnabled: boolean;
+  groupId: number | null;
 }
 
 export interface ModInput {
@@ -45,10 +46,18 @@ export interface ModInput {
   imageDataUrl: string | null;
 }
 
+export interface ModGroupMember {
+  modId: number;
+  name: string;
+  folderName: string;
+  isEnabled: boolean;
+}
+
 export interface ModGroup {
   id: number;
   name: string;
-  modIds: number[];
+  isEnabled: boolean;
+  members: ModGroupMember[];
 }
 
 export interface ArchiveEntry {
