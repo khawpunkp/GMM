@@ -66,13 +66,13 @@ const specialityIcon = computed(() =>
                v-if="specialityIcon"
                :src="specialityIcon"
                alt=""
-               class="z-10 size-8 rounded-full bg-[#1f1e36] object-contain p-1.5"
+               class="bg-background z-10 size-8 rounded-full object-contain p-1.5"
             />
             <img
                v-if="attributeIcon"
                :src="attributeIcon"
                alt=""
-               class="z-10 size-8 rounded-full bg-[#1f1e36] object-contain p-1.5"
+               class="bg-background z-10 size-8 rounded-full object-contain p-1.5"
             />
          </div>
          <div class="-mt-4 h-10 rounded-b-lg" :style="{ backgroundColor: barColor }" />

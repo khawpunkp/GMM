@@ -89,11 +89,17 @@ const specialityModel = detailModel('speciality');
 // agent with no reachable detail page (and no way to reach its Delete button).
 const canSubmit = computed(() => /[a-z0-9]/i.test(name.value));
 
-const statRows = computed(() => [
-   { label: 'Rank', value: details.rank, icon: RANK_ICONS[details.rank] },
-   { label: 'Attribute', value: details.attribute, icon: ATTRIBUTE_ICONS[details.attribute] },
-   { label: 'Speciality', value: details.speciality, icon: SPECIALITY_ICONS[details.speciality] },
-]);
+const statRows = computed(() =>
+   [
+      { label: 'Rank', value: details.rank, icon: RANK_ICONS[details.rank] },
+      { label: 'Attribute', value: details.attribute, icon: ATTRIBUTE_ICONS[details.attribute] },
+      {
+         label: 'Speciality',
+         value: details.speciality,
+         icon: SPECIALITY_ICONS[details.speciality],
+      },
+   ].filter((stat) => Boolean(stat.value)),
+);
 
 // Fires both on agent-to-agent navigation and after a save (the parent reassigns the agent with
 // the server's response) — either way, drop back to the read-only view.
@@ -146,56 +152,54 @@ function handleSubmit() {
 
 <template>
    <div v-auto-animate class="bg-card rounded-lg border border-white/10 p-6">
-      <div v-if="!isEditing">
-         <div class="mb-5 flex items-center gap-4">
-            <img
-               :src="resolveAgentImageSrc(baseImage)"
-               alt=""
-               class="bg-foreground size-20 rounded-lg border border-white/10 object-cover"
-               :class="{ 'p-2': !baseImage }"
-            />
-            <div class="flex flex-col gap-1">
-               <VueTypography variant="TitleB" as="h2">{{ name }}</VueTypography>
-            </div>
-         </div>
-
-         <div class="mb-4.5 flex flex-wrap gap-8">
-            <div v-for="stat in statRows" :key="stat.label" class="flex flex-col gap-1.5">
-               <Label>{{ stat.label }}</Label>
-               <div class="flex items-center gap-2">
-                  <img v-if="stat.icon" :src="stat.icon" alt="" class="size-5 object-contain" />
-                  <VueTypography variant="BodyR" as="span">{{ stat.value || '—' }}</VueTypography>
+      <div v-if="!isEditing" class="flex gap-6">
+         <img
+            :src="resolveAgentImageSrc(baseImage)"
+            alt=""
+            class="bg-foreground size-60 rounded-lg border border-white/10 object-cover"
+            :class="{ 'p-2': !baseImage }"
+         />
+         <div class="flex flex-1 flex-col items-start gap-4">
+            <VueTypography variant="H1B" as="h2">{{ name }}</VueTypography>
+            <div v-if="statRows.length > 0" class="flex flex-wrap gap-4">
+               <div v-for="stat in statRows" :key="stat.label" class="flex flex-col gap-1.5">
+                  <div class="bg-background/50 flex items-center gap-2 rounded-lg px-3 py-2">
+                     <img v-if="stat.icon" :src="stat.icon" alt="" class="size-6 object-contain" />
+                     <VueTypography v-if="stat.label !== 'Rank'" variant="BodyR" as="span">
+                        {{ stat.value || '—' }}
+                     </VueTypography>
+                  </div>
                </div>
             </div>
-         </div>
 
-         <div class="mb-4.5 flex flex-col gap-2">
-            <Label>Aliases</Label>
-            <div v-auto-animate class="flex flex-wrap gap-2">
-               <span
-                  v-for="alias in aliases"
-                  :key="alias"
-                  class="bg-primary/15 rounded-full px-3 py-1 text-sm"
-               >
-                  {{ alias }}
-               </span>
-               <VueTypography
-                  v-if="aliases.length === 0"
-                  variant="CaptionR"
-                  as="span"
-                  class="text-muted-foreground"
-               >
-                  No aliases yet
-               </VueTypography>
+            <div class="flex flex-col gap-2">
+               <Label>Aliases</Label>
+               <div v-auto-animate class="flex flex-wrap gap-2">
+                  <span
+                     v-for="alias in aliases"
+                     :key="alias"
+                     class="bg-primary/15 rounded-full px-3 py-1 text-sm"
+                  >
+                     {{ alias }}
+                  </span>
+                  <VueTypography
+                     v-if="aliases.length === 0"
+                     variant="CaptionR"
+                     as="span"
+                     class="text-muted-foreground"
+                  >
+                     No aliases yet
+                  </VueTypography>
+               </div>
             </div>
-         </div>
 
-         <div class="mt-2.5 flex items-center justify-end gap-3">
-            <slot name="actions" />
-            <VueButton type="button" class="min-w-32" @click="isEditing = true">
-               <PhPencilSimple :size="20" weight="fill" />
-               Edit
-            </VueButton>
+            <div class="mt-auto flex w-full items-center justify-end gap-4">
+               <slot name="actions" />
+               <VueButton type="button" class="min-w-32" @click="isEditing = true">
+                  <PhPencilSimple :size="20" weight="fill" />
+                  Edit
+               </VueButton>
+            </div>
          </div>
       </div>
 
@@ -204,7 +208,7 @@ function handleSubmit() {
             <img
                :src="resolveAgentImageSrc(baseImage)"
                alt=""
-               class="bg-foreground size-full rounded-lg border border-white/10 object-cover"
+               class="bg-foreground size-60 rounded-lg border border-white/10 object-cover"
                :class="{ 'p-2': !baseImage }"
             />
             <VueButton
@@ -217,7 +221,7 @@ function handleSubmit() {
                Choose Image
             </VueButton>
          </div>
-         <div class="flex flex-1 flex-col gap-6">
+         <div class="flex flex-1 flex-col gap-4">
             <VueInput
                id="agent-name"
                v-model="name"
@@ -226,7 +230,7 @@ function handleSubmit() {
                :disabled="!canEditDetails"
             />
 
-            <div class="flex flex-wrap gap-6">
+            <div class="flex flex-wrap gap-4">
                <VueSelect
                   v-model="rankModel"
                   label="Rank"
@@ -274,7 +278,7 @@ function handleSubmit() {
                      </button>
                   </span>
                </div>
-               <div class="flex gap-2">
+               <div class="flex gap-4">
                   <VueInput
                      v-model="aliasInput"
                      container-class="flex-1"
@@ -292,7 +296,7 @@ function handleSubmit() {
                </div>
             </div>
 
-            <div class="mt-2.5 flex items-center justify-end gap-3">
+            <div class="mt-2.5 flex items-center justify-end gap-4">
                <VueButton
                   v-if="initialAgent"
                   type="button"
