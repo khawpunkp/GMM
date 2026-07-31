@@ -90,16 +90,26 @@ pub fn update_agent(
     state: State<DbState>,
 ) -> Result<AgentWithAliases, String> {
     let mut conn = state.0.lock().map_err(|e| e.to_string())?;
-    let id: i64 = conn
-        .query_row("SELECT id FROM agents WHERE slug = ?1", params![slug], |row| row.get(0))
+    let (id, is_builtin): (i64, i64) = conn
+        .query_row(
+            "SELECT id, is_builtin FROM agents WHERE slug = ?1",
+            params![slug],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )
         .map_err(|e| e.to_string())?;
 
     let tx = conn.transaction().map_err(|e| e.to_string())?;
-    tx.execute(
-        "UPDATE agents SET name = ?1, details = ?2, base_image = ?3 WHERE id = ?4",
-        params![input.name, input.details, input.base_image, id],
-    )
-    .map_err(|e| e.to_string())?;
+    // A built-in agent's name/details/base_image come from definitions/zzz.toml and get rewritten
+    // by the version-gated seed re-sync, so accepting edits to them would silently lose the change
+    // on the next update. Aliases are the one field sync leaves alone (additive-only), so those
+    // still apply below.
+    if is_builtin == 0 {
+        tx.execute(
+            "UPDATE agents SET name = ?1, details = ?2, base_image = ?3 WHERE id = ?4",
+            params![input.name, input.details, input.base_image, id],
+        )
+        .map_err(|e| e.to_string())?;
+    }
 
     // Full-replace diff for user edits (unlike seed-sync's additive-only aliases).
     let existing: Vec<String> = {
