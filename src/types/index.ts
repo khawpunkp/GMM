@@ -57,6 +57,7 @@ export interface ModGroupMember {
 export interface ModGroup {
    id: number;
    name: string;
+   baseImage: string | null;
    isEnabled: boolean;
    members: ModGroupMember[];
 }

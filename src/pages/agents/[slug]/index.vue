@@ -6,6 +6,7 @@ import AgentForm from '../../../components/agents/AgentForm.vue';
 import ModCard from '../../../components/mods/ModCard.vue';
 import GroupCard from '../../../components/mods/GroupCard.vue';
 import ModEditModal from '../../../components/mods/ModEditModal.vue';
+import GroupModal from '../../../components/mods/GroupModal.vue';
 import KeybindsPopup from '../../../components/mods/KeybindsPopup.vue';
 import VueButton from '@/components/ui/button/VueButton.vue';
 import VueInput from '@/components/ui/input/VueInput.vue';
@@ -14,7 +15,7 @@ import VueTypography from '@/components/ui/typography/VueTypography.vue';
 import { useAgentsStore } from '../../../stores/agents';
 import { useModsStore } from '../../../stores/mods';
 import { useModGroupsStore } from '../../../stores/modGroups';
-import type { Agent, AgentInput, Mod, ModInput } from '../../../types';
+import type { Agent, AgentInput, Mod, ModGroup, ModInput } from '../../../types';
 
 const SORT_KEY_PREFIX = 'sort_agent_';
 
@@ -38,6 +39,8 @@ const isLoading = ref(true);
 const errorMessage = ref<string | null>(null);
 const editingMod = ref<Mod | null>(null);
 const keybindsMod = ref<Mod | null>(null);
+const editingGroup = ref<ModGroup | null>(null);
+const creatingGroupModIds = ref<number[] | null>(null);
 
 const isSelecting = ref(false);
 const selectedModIds = ref<Set<number>>(new Set());
@@ -176,18 +179,20 @@ function toggleSelect(mod: Mod) {
    }
 }
 
-async function groupSelected() {
+function groupSelected() {
    if (selectedModIds.value.size < 2) return;
-   const name = prompt('Name this group:');
-   if (!name || !name.trim()) return;
-   try {
-      await modGroupsStore.create(name.trim(), Array.from(selectedModIds.value));
-      isSelecting.value = false;
-      selectedModIds.value.clear();
-      await loadMods();
-   } catch (e) {
-      alert(String(e));
-   }
+   creatingGroupModIds.value = Array.from(selectedModIds.value);
+}
+
+async function handleGroupSaved() {
+   isSelecting.value = false;
+   selectedModIds.value.clear();
+   await loadMods();
+}
+
+function closeGroupModal() {
+   creatingGroupModIds.value = null;
+   editingGroup.value = null;
 }
 </script>
 
@@ -297,6 +302,7 @@ async function groupSelected() {
                      v-for="group in filteredGroups"
                      :key="`group-${group.id}`"
                      :group="group"
+                     @edit="editingGroup = $event"
                   />
                   <ModCard
                      v-for="mod in sortedFilteredMods"
@@ -320,6 +326,15 @@ async function groupSelected() {
          @submit="handleModSubmit"
          @recategorize="handleModRecategorize"
          @close="editingMod = null"
+      />
+
+      <GroupModal
+         v-if="editingGroup || creatingGroupModIds"
+         :group="editingGroup ?? undefined"
+         :mod-ids="creatingGroupModIds ?? undefined"
+         :available-mods="modsStore.mods"
+         @saved="handleGroupSaved"
+         @close="closeGroupModal"
       />
 
       <KeybindsPopup v-if="keybindsMod" :mod-id="keybindsMod.id" @close="keybindsMod = null" />

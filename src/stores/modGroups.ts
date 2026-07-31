@@ -17,9 +17,13 @@ export const useModGroupsStore = defineStore('modGroups', {
             this.isLoading = false;
          }
       },
-      async create(name: string, modIds: number[]) {
-         const group = await invoke<ModGroup>('create_mod_group', { name, modIds });
+      async create(name: string, baseImage: string | null, modIds: number[]) {
+         const group = await invoke<ModGroup>('create_mod_group', { name, baseImage, modIds });
          this.groups.push(group);
+         const grouped = new Set(modIds);
+         useModsStore().mods.forEach((m) => {
+            if (grouped.has(m.id)) m.groupId = group.id;
+         });
          return group;
       },
       async toggle(groupId: number) {
@@ -31,10 +35,19 @@ export const useModGroupsStore = defineStore('modGroups', {
          }
          return isEnabled;
       },
-      async rename(groupId: number, name: string) {
-         await invoke('rename_mod_group', { groupId, name });
-         const group = this.groups.find((g) => g.id === groupId);
-         if (group) group.name = name;
+      async update(groupId: number, name: string, baseImage: string | null) {
+         const updated = await invoke<ModGroup>('update_mod_group', { groupId, name, baseImage });
+         const index = this.groups.findIndex((g) => g.id === groupId);
+         if (index !== -1) this.groups[index] = updated;
+         return updated;
+      },
+      async addMember(groupId: number, modId: number) {
+         const updated = await invoke<ModGroup>('add_mod_to_group', { groupId, modId });
+         const index = this.groups.findIndex((g) => g.id === groupId);
+         if (index !== -1) this.groups[index] = updated;
+         const addedMod = useModsStore().mods.find((m) => m.id === modId);
+         if (addedMod) addedMod.groupId = groupId;
+         return updated;
       },
       async removeMember(groupId: number, modId: number) {
          const groupBefore = this.groups.find((g) => g.id === groupId);

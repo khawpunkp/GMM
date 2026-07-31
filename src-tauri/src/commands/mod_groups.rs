@@ -22,10 +22,15 @@ pub fn list_mod_groups(state: State<DbState>) -> Result<Vec<ModGroupWithMembers>
 }
 
 #[tauri::command]
-pub fn create_mod_group(name: String, mod_ids: Vec<i64>, state: State<DbState>) -> Result<ModGroupWithMembers, String> {
+pub fn create_mod_group(
+    name: String,
+    base_image: Option<String>,
+    mod_ids: Vec<i64>,
+    state: State<DbState>,
+) -> Result<ModGroupWithMembers, String> {
     let mods_path = get_mods_folder(&state)?;
     let mut conn = state.0.lock().map_err(|e| e.to_string())?;
-    mod_groups::create_group(&mut conn, &mods_path, &name, &mod_ids)
+    mod_groups::create_group(&mut conn, &mods_path, &name, base_image.as_deref(), &mod_ids)
 }
 
 #[tauri::command]
@@ -47,9 +52,15 @@ pub fn remove_mod_from_group(
 }
 
 #[tauri::command]
-pub fn rename_mod_group(group_id: i64, name: String, state: State<DbState>) -> Result<(), String> {
+pub fn update_mod_group(
+    group_id: i64,
+    name: String,
+    base_image: Option<String>,
+    state: State<DbState>,
+) -> Result<ModGroupWithMembers, String> {
+    let mods_path = get_mods_folder(&state)?;
     let conn = state.0.lock().map_err(|e| e.to_string())?;
-    mod_groups::rename_group(&conn, group_id, &name)
+    mod_groups::update_group(&conn, &mods_path, group_id, &name, base_image.as_deref())
 }
 
 #[tauri::command]

@@ -191,7 +191,7 @@ const visibleAgents = computed(() => {
                </button>
             </div>
          </div>
-         <div class="flex items-center gap-5">
+         <div class="flex w-full items-center justify-end gap-5">
             <VueInput
                v-model="search"
                container-class="w-full max-w-75"
@@ -214,6 +214,7 @@ const visibleAgents = computed(() => {
          </div>
          <div
             v-else
+            v-auto-animate
             class="grid gap-6 pb-6"
             style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))"
          >

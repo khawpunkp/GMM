@@ -76,6 +76,7 @@ pub struct ModGroupMember {
 pub struct ModGroupWithMembers {
     pub id: i64,
     pub name: String,
+    pub base_image: Option<String>,
     pub is_enabled: bool,
     pub members: Vec<ModGroupMember>,
 }

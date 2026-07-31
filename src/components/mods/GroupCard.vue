@@ -15,26 +15,13 @@ import { useModGroupsStore } from '../../stores/modGroups';
 import type { ModGroup } from '../../types';
 
 const props = defineProps<{ group: ModGroup }>();
+const emit = defineEmits<{ edit: [group: ModGroup] }>();
 
 const modGroupsStore = useModGroupsStore();
 const isExpanded = ref(false);
-const isRenaming = ref(false);
-const renameValue = ref(props.group.name);
 
 function toggle() {
    modGroupsStore.toggle(props.group.id);
-}
-
-function startRename() {
-   renameValue.value = props.group.name;
-   isRenaming.value = true;
-}
-
-async function confirmRename() {
-   if (renameValue.value.trim()) {
-      await modGroupsStore.rename(props.group.id, renameValue.value.trim());
-   }
-   isRenaming.value = false;
 }
 
 async function removeMember(modId: number) {
@@ -53,7 +40,12 @@ async function disband() {
       :class="{ 'opacity-50': !group.isEnabled }"
       v-auto-animate
    >
-      <img alt="" class="aspect-video w-full rounded-sm object-cover" />
+      <img
+         :src="group.baseImage ?? '/images/no-data.png'"
+         alt=""
+         class="aspect-video w-full rounded-sm"
+         :class="group.baseImage ? 'object-cover' : 'object-contain'"
+      />
       <div class="flex items-center gap-2">
          <button
             type="button"
@@ -65,21 +57,7 @@ async function disband() {
             <PhCaretRight v-else :size="16" />
          </button>
          <PhStack :size="20" class="text-primary" weight="fill" />
-         <input
-            v-if="isRenaming"
-            v-model="renameValue"
-            class="text-foreground grow rounded-md border border-white/10 bg-white/5 px-2 py-1 outline-none"
-            type="text"
-            @keydown.enter="confirmRename"
-            @blur="confirmRename"
-         />
-         <VueTypography
-            v-else
-            variant="BodyB"
-            as="span"
-            class="grow cursor-text"
-            @dblclick="startRename"
-         >
+         <VueTypography variant="BodyB" as="span" class="grow">
             {{ group.name }}
          </VueTypography>
          <span class="bg-accent text-background rounded-full px-2 py-0.5 text-[11px] font-semibold">
@@ -97,8 +75,8 @@ async function disband() {
          <button
             type="button"
             class="text-foreground cursor-pointer p-1 opacity-70 transition-all hover:opacity-100"
-            title="Rename"
-            @click="startRename"
+            title="Edit group"
+            @click="emit('edit', group)"
          >
             <PhPencilSimple :size="20" weight="fill" />
          </button>

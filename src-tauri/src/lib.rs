@@ -59,7 +59,7 @@ pub fn run() {
             commands::mod_groups::create_mod_group,
             commands::mod_groups::add_mod_to_group,
             commands::mod_groups::remove_mod_from_group,
-            commands::mod_groups::rename_mod_group,
+            commands::mod_groups::update_mod_group,
             commands::mod_groups::delete_mod_group,
             commands::mod_groups::toggle_mod_group,
         ])

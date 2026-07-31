@@ -50,8 +50,11 @@ CREATE TABLE IF NOT EXISTS mods (
 );
 
 CREATE TABLE IF NOT EXISTS mod_groups (
-    id   INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    name       TEXT NOT NULL,
+    -- A data: URL, same convention agents' base_image uses for user-picked images. Groups have
+    -- no folder of their own on disk, so there's nowhere to put a plain filename.
+    base_image TEXT
 );
 
 CREATE TABLE IF NOT EXISTS mod_group_members (

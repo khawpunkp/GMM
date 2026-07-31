@@ -102,6 +102,25 @@ fn migrate_drop_mod_agent_description(conn: &Connection) -> rusqlite::Result<()>
     Ok(())
 }
 
+/// Adds `mod_groups.base_image` to installs created before groups had an image. Naturally
+/// idempotent via the column check, so this needs no settings flag — unlike the destructive
+/// migrations above, re-running it is a no-op rather than data loss.
+fn migrate_add_mod_group_base_image(conn: &Connection) -> rusqlite::Result<()> {
+    // Migrations run before schema::SCHEMA, so on a fresh install the table isn't there yet and
+    // SCHEMA will create it with the column already present.
+    let table_exists: bool = conn.query_row(
+        "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'mod_groups')",
+        [],
+        |row| row.get(0),
+    )?;
+
+    if table_exists && !column_exists(conn, "mod_groups", "base_image")? {
+        conn.execute("ALTER TABLE mod_groups ADD COLUMN base_image TEXT", [])?;
+    }
+
+    Ok(())
+}
+
 pub fn init_db(app_data_dir: &Path) -> rusqlite::Result<Connection> {
     std::fs::create_dir_all(app_data_dir).expect("failed to create app data dir");
     let db_path = app_data_dir.join("gmm.db");
@@ -109,6 +128,7 @@ pub fn init_db(app_data_dir: &Path) -> rusqlite::Result<Connection> {
     migrate_mod_group_members_unique(&conn)?;
     migrate_drop_presets(&conn)?;
     migrate_drop_mod_agent_description(&conn)?;
+    migrate_add_mod_group_base_image(&conn)?;
     conn.execute_batch(schema::SCHEMA)?;
     Ok(conn)
 }
