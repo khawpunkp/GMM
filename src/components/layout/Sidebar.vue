@@ -248,7 +248,7 @@ async function runScan() {
             <VueTypography variant="TitleB" as="h2" class="mb-4">Scan Result</VueTypography>
             <VueTypography
                v-if="scanMessage && !scanError"
-               variant="CaptionR"
+               variant="BodyB"
                as="p"
                class="text-muted-foreground"
             >
@@ -258,7 +258,9 @@ async function runScan() {
                {{ scanError }}
             </VueTypography>
             <div class="mt-5 flex justify-end">
-               <VueButton type="button" @click="showScanResult = false">Close</VueButton>
+               <VueButton type="button" @click="showScanResult = false" class="min-w-32">
+                  Close
+               </VueButton>
             </div>
          </div>
       </div>

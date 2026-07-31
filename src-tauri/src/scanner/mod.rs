@@ -184,7 +184,7 @@ pub fn run_scan(
     }
 
     Ok(format!(
-        "Scan complete. Processed {} mod folders. Added {} new mods. Mapped {} mods to an agent. Pruned {} missing mods. Renamed {} folders. {} errors.",
+        "Processed {} mod folders.\nAdded {} new mods.\nMapped {} mods to an agent.\nPruned {} missing mods.\nRenamed {} folders.\n{} errors.",
         processed, added, remapped, pruned, renamed, errors
     ))
 }

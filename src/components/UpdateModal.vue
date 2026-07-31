@@ -69,13 +69,19 @@ async function handleRestart() {
          </VueTypography>
 
          <div class="mt-2.5 flex items-center justify-end gap-3">
-            <VueButton v-if="updaterStore.isReadyToRestart" type="button" @click="handleRestart">
+            <VueButton
+               v-if="updaterStore.isReadyToRestart"
+               type="button"
+               class="min-w-32"
+               @click="handleRestart"
+            >
                Restart Now
             </VueButton>
             <template v-else>
                <VueButton
                   type="button"
                   variant="outlined"
+                  class="min-w-32"
                   :disabled="updaterStore.isDownloading"
                   @click="handleClose"
                >
@@ -83,6 +89,7 @@ async function handleRestart() {
                </VueButton>
                <VueButton
                   type="button"
+                  class="min-w-32"
                   :disabled="updaterStore.isDownloading"
                   @click="handleInstall"
                >
