@@ -224,12 +224,12 @@ async function groupSelected() {
 
     <div
       v-if="category"
-      class="mb-6 flex flex-wrap items-center gap-5 border-b border-white/10 pb-4"
+      class="mb-6 flex flex-wrap items-center gap-5 border-b border-white/10 pb-6"
     >
       <VueInput
         v-model="search"
         container-class="ml-auto w-full max-w-75"
-        placeholder="Search agents..."
+        :placeholder="`Search ${category?.name}...`"
         label="Search"
       >
         <template #iconStart="{ color }"

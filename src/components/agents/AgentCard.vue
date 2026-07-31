@@ -51,7 +51,7 @@ const specialityIcon = computed(() =>
       </div>
 
       <div
-        class="flex h-55 shrink-0 items-end justify-end gap-1.5 rounded-b-2xl bg-cover bg-top p-2 z-10 relative bg-white overflow-hidden"
+        class="flex h-55 shrink-0 items-end justify-end gap-1.5 rounded-b-lg bg-cover bg-top p-2 z-10 relative bg-white overflow-hidden"
       >
         <img
           :src="resolveAgentImageSrc(agent.baseImage)"
@@ -71,7 +71,7 @@ const specialityIcon = computed(() =>
         />
       </div>
       <div
-        class="-mt-4 h-10 rounded-b-2xl"
+        class="-mt-4 h-10 rounded-b-lg"
         :style="{ backgroundColor: barColor }"
       />
 

@@ -48,6 +48,7 @@ export const ATTRIBUTE_ICONS: Record<string, string> = {
   Electric: "/images/filters/zzz/electric.webp",
   Ether: "/images/filters/zzz/ether.webp",
   AuricInk: "/images/filters/zzz/auric-ink.webp",
+  Lumiflux: "/images/filters/zzz/lumiflux.webp",
 };
 
 export const SPECIALITY_ICONS: Record<string, string> = {

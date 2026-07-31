@@ -1,16 +1,26 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from "vue";
 import { reactiveOmit } from "@vueuse/core";
-import { SelectContent, type SelectContentEmits, type SelectContentProps, SelectPortal, SelectViewport, useForwardPropsEmits } from "reka-ui";
+import {
+  SelectContent,
+  type SelectContentEmits,
+  type SelectContentProps,
+  SelectPortal,
+  SelectViewport,
+  useForwardPropsEmits,
+} from "reka-ui";
 import { cn } from "@/utils/general";
 
 defineOptions({
   inheritAttrs: false,
 });
 
-const props = withDefaults(defineProps<SelectContentProps & { class?: HTMLAttributes["class"] }>(), {
-  position: "popper",
-});
+const props = withDefaults(
+  defineProps<SelectContentProps & { class?: HTMLAttributes["class"] }>(),
+  {
+    position: "popper",
+  },
+);
 const emits = defineEmits<SelectContentEmits>();
 
 const delegatedProps = reactiveOmit(props, "class");
@@ -25,19 +35,26 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
       v-bind="{ ...forwarded, ...$attrs }"
       :class="
         cn(
-          'content-shadow relative z-50 flex max-h-65 w-[calc(100dvw-48px)] max-w-148 flex-col overflow-x-hidden rounded-lg bg-card text-foreground border border-white/10',
+          'content-shadow relative z-50 flex max-h-65 w-[calc(100dvw-48px)] max-w-75 flex-col overflow-x-hidden rounded-lg bg-card text-foreground border border-white/10',
           'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
           'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
           'data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2',
           'data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
           position === 'popper' &&
             'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
-          props.class
+          props.class,
         )
       "
     >
       <slot name="input" />
-      <SelectViewport :class="cn('min-h-0 flex-1 overflow-y-auto p-1', position === 'popper' && 'scrollbar w-full scroll-my-1')">
+      <SelectViewport
+        :class="
+          cn(
+            'min-h-0 flex-1 overflow-y-auto p-1',
+            position === 'popper' && 'scrollbar w-full scroll-my-1',
+          )
+        "
+      >
         <slot />
       </SelectViewport>
     </SelectContent>

@@ -292,7 +292,7 @@ async function groupSelected() {
           <VueInput
             v-model="search"
             container-class="ml-auto w-full max-w-75"
-            placeholder="Search agents..."
+            placeholder="Search Mods..."
             label="Search"
           >
             <template #iconStart="{ color }"

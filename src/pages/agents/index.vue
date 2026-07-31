@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { useRouter } from "vue-router";
-import { PhUsers, PhMagnifyingGlass } from "@phosphor-icons/vue";
+import { PhUsers, PhMagnifyingGlass, PhUserPlus } from "@phosphor-icons/vue";
 import AgentCard from "../../components/agents/AgentCard.vue";
 import VueButton from "@/components/ui/button/VueButton.vue";
 import VueInput from "@/components/ui/input/VueInput.vue";
@@ -122,7 +122,7 @@ const visibleAgents = computed(() => {
 </script>
 
 <template>
-  <div>
+  <div class="h-full flex flex-col">
     <div
       class="mb-6 flex flex-wrap items-center justify-between gap-5 border-b border-white/10 pb-4"
     >
@@ -134,91 +134,97 @@ const visibleAgents = computed(() => {
         <PhUsers :size="32" weight="fill" />Agents
       </VueTypography>
 
-      <VueButton type="button" @click="router.push('/agents/new')"
-        >+ Add Agent</VueButton
+      <VueButton type="button" @click="router.push('/agents/new')">
+        <PhUserPlus :size="24" weight="fill" /> Add Agent</VueButton
       >
     </div>
 
     <div
-      class="mb-6 flex flex-wrap items-center gap-5 border-b border-white/10 pb-4"
+      class="mb-6 flex flex-col flex-wrap gap-6 border-b border-white/10 pb-6 items-end"
     >
-      <div class="flex flex-wrap gap-2 h-12 items-center mt-5.5">
-        <button
-          v-for="rank in RANKS"
-          :key="rank.key"
-          type="button"
-          class="inline-flex items-center rounded-2xl border border-[#1f1e36] bg-[#1f1e36] p-1.5 transition-colors size-9 justify-center"
-          :class="
-            selectedRank === rank.key
-              ? 'border-white/40 bg-white/10'
-              : 'hover:border-white/40 hover:bg-white/10'
-          "
-          :title="rank.key"
-          @click="toggleRank(rank.key)"
-        >
-          <img :src="rank.icon" alt="" class="size-5 object-contain" />
-        </button>
+      <div class="flex flex-wrap items-center gap-5">
+        <div class="flex flex-wrap gap-2 items-center">
+          <button
+            v-for="rank in RANKS"
+            :key="rank.key"
+            type="button"
+            class="inline-flex items-center rounded-2xl border border-[#1f1e36] bg-[#1f1e36] p-1.5 transition-colors size-9 justify-center"
+            :class="
+              selectedRank === rank.key
+                ? 'border-white/40 bg-white/10'
+                : 'hover:border-white/40 hover:bg-white/10'
+            "
+            :title="rank.key"
+            @click="toggleRank(rank.key)"
+          >
+            <img :src="rank.icon" alt="" class="size-5 object-contain" />
+          </button>
+        </div>
+        <div class="flex flex-wrap gap-2 items-center">
+          <button
+            v-for="attribute in ATTRIBUTES"
+            :key="attribute.key"
+            type="button"
+            class="inline-flex items-center rounded-2xl border border-[#1f1e36] bg-[#1f1e36] p-1.5 transition-colors size-9 justify-center"
+            :class="
+              selectedAttribute === attribute.key
+                ? 'border-white/40 bg-white/10'
+                : 'hover:border-white/40 hover:bg-white/10'
+            "
+            :title="attribute.key"
+            @click="toggleAttribute(attribute.key)"
+          >
+            <img :src="attribute.icon" alt="" class="size-5 object-contain" />
+          </button>
+        </div>
+        <div class="flex flex-wrap gap-2 items-center">
+          <button
+            v-for="speciality in SPECIALITIES"
+            :key="speciality.key"
+            type="button"
+            class="inline-flex items-center rounded-2xl border border-[#1f1e36] bg-[#1f1e36] p-1.5 transition-colors size-9 justify-center"
+            :class="
+              selectedSpeciality === speciality.key
+                ? 'border-white/40 bg-white/10'
+                : 'hover:border-white/40 hover:bg-white/10'
+            "
+            :title="speciality.key"
+            @click="toggleSpeciality(speciality.key)"
+          >
+            <img :src="speciality.icon" alt="" class="size-5 object-contain" />
+          </button>
+        </div>
       </div>
-      <div class="flex flex-wrap gap-2 h-12 items-center mt-5.5">
-        <button
-          v-for="attribute in ATTRIBUTES"
-          :key="attribute.key"
-          type="button"
-          class="inline-flex items-center rounded-2xl border border-[#1f1e36] bg-[#1f1e36] p-1.5 transition-colors size-9 justify-center"
-          :class="
-            selectedAttribute === attribute.key
-              ? 'border-white/40 bg-white/10'
-              : 'hover:border-white/40 hover:bg-white/10'
-          "
-          :title="attribute.key"
-          @click="toggleAttribute(attribute.key)"
+      <div class="flex items-center gap-5">
+        <VueInput
+          v-model="search"
+          container-class="w-full max-w-75"
+          placeholder="Search Agents..."
+          label="Search"
         >
-          <img :src="attribute.icon" alt="" class="size-5 object-contain" />
-        </button>
-      </div>
-      <div class="flex flex-wrap gap-2 h-12 items-center mt-5.5">
-        <button
-          v-for="speciality in SPECIALITIES"
-          :key="speciality.key"
-          type="button"
-          class="inline-flex items-center rounded-2xl border border-[#1f1e36] bg-[#1f1e36] p-1.5 transition-colors size-9 justify-center"
-          :class="
-            selectedSpeciality === speciality.key
-              ? 'border-white/40 bg-white/10'
-              : 'hover:border-white/40 hover:bg-white/10'
-          "
-          :title="speciality.key"
-          @click="toggleSpeciality(speciality.key)"
-        >
-          <img :src="speciality.icon" alt="" class="size-5 object-contain" />
-        </button>
-      </div>
-
-      <VueInput
-        v-model="search"
-        container-class="ml-auto w-full max-w-75"
-        placeholder="Search agents..."
-        label="Search"
-      >
-        <template #iconStart="{ color }"
-          ><PhMagnifyingGlass :size="24" :color="color"
-        /></template>
-      </VueInput>
-      <div class="w-full max-w-75">
-        <VueSelect
-          v-model="sortOption"
-          :options="SORT_OPTIONS"
-          label="Sort by"
-        />
+          <template #iconStart="{ color }"
+            ><PhMagnifyingGlass :size="24" :color="color"
+          /></template>
+        </VueInput>
+        <div class="w-full max-w-75">
+          <VueSelect
+            v-model="sortOption"
+            :options="SORT_OPTIONS"
+            label="Sort by"
+          />
+        </div>
       </div>
     </div>
 
-    <p v-if="visibleAgents.length === 0" class="text-sm text-muted-foreground">
-      No agents match your filters.
-    </p>
+    <div
+      v-if="visibleAgents.length === 0"
+      class="flex-1 flex justify-center items-center"
+    >
+      <img src="/images/no-data.png" class="w-50" />
+    </div>
     <div
       v-else
-      class="grid gap-6"
+      class="grid gap-6 pb-6"
       style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))"
     >
       <AgentCard

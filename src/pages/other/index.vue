@@ -191,12 +191,12 @@ async function groupSelected() {
     </div>
 
     <div
-      class="mb-6 flex flex-wrap items-center gap-5 border-b border-white/10 pb-4"
+      class="mb-6 flex flex-wrap items-center gap-5 border-b border-white/10 pb-6"
     >
       <VueInput
         v-model="search"
         container-class="ml-auto w-full max-w-75"
-        placeholder="Search mods..."
+        placeholder="Search Mods..."
         label="Search"
       >
         <template #iconStart="{ color }"

@@ -42,7 +42,7 @@ import { cn } from "@/utils/general";
 
 const baseStyle = [
   "relative items-center justify-center overflow-hidden",
-  "flex gap-2 px-4",
+  "flex gap-2 px-4 shrink-0",
   "rounded-lg",
   "transition-all duration-500",
   "cursor-pointer",
@@ -65,7 +65,7 @@ const buttonVariants = cva(baseStyle, {
       disabled: "bg-gray-600! text-white! border-gray-600!",
     },
     size: {
-      default: "h-12 text-[16px] font-[600]",
+      default: "h-12 text-[14px] font-[600]",
       sm: "h-[28px] px-2 text-[14px] font-[400]",
       xs: "h-6 px-3.5 text-[14px] font-[300]",
       custom: "",

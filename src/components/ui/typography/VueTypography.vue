@@ -6,17 +6,17 @@ import { cn } from "@/utils/general";
 const typoVariants = cva("", {
   variants: {
     variant: {
-      H1B: "text-[24px] font-[600]",
-      TitleB: "text-[18px] font-[600]",
-      TitleR: "text-[18px] font-[400]",
-      BodyB: "text-[16px] font-[600]",
-      BodyR: "text-[16px] font-[400]",
-      BodyL: "text-[16px] font-[300]",
-      CaptionB: "text-[14px] font-[600]",
-      CaptionR: "text-[14px] font-[400]",
-      CaptionL: "text-[14px] font-[300]",
-      SubL: "text-[12px] font-[300]",
-      FooterNav: "text-[12px] font-[400]",
+      H1B: "text-[24px] font-[800]",
+      TitleB: "text-[18px] font-[800]",
+      TitleR: "text-[18px] font-[600]",
+      BodyB: "text-[16px] font-[800]",
+      BodyR: "text-[16px] font-[600]",
+      BodyL: "text-[16px] font-[500]",
+      CaptionB: "text-[14px] font-[800]",
+      CaptionR: "text-[14px] font-[600]",
+      CaptionL: "text-[14px] font-[500]",
+      SubL: "text-[12px] font-[500]",
+      FooterNav: "text-[12px] font-[600]",
     },
   },
   defaultVariants: {

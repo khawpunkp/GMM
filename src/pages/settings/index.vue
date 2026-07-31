@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 import { open } from "@tauri-apps/plugin-dialog";
-import { invoke } from "@tauri-apps/api/core";
 import { getVersion } from "@tauri-apps/api/app";
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { PhGear } from "@phosphor-icons/vue";
 import VueButton from "@/components/ui/button/VueButton.vue";
 import VueTypography from "@/components/ui/typography/VueTypography.vue";
@@ -15,46 +13,16 @@ const settingsStore = useSettingsStore();
 const updaterStore = useUpdaterStore();
 
 const modsFolderPath = ref<string | null>(null);
-const isScanning = ref(false);
-const statusMessage = ref<string | null>(null);
-const errorMessage = ref<string | null>(null);
-
 const gameExecutablePath = ref<string | null>(null);
 
 const currentVersion = ref<string>("");
 const showUpdateModal = ref(false);
 const noUpdateFound = ref(false);
 
-let unlistenProgress: UnlistenFn | null = null;
-let unlistenComplete: UnlistenFn | null = null;
-let unlistenError: UnlistenFn | null = null;
-
 onMounted(async () => {
   modsFolderPath.value = await settingsStore.fetch("mods_folder_path");
   gameExecutablePath.value = await settingsStore.fetch("game_executable_path");
   currentVersion.value = await getVersion();
-
-  unlistenProgress = await listen<{
-    processed: number;
-    currentPath: string | null;
-    message: string;
-  }>("scan-progress", (event) => {
-    statusMessage.value = event.payload.message;
-  });
-  unlistenComplete = await listen<string>("scan-complete", (event) => {
-    statusMessage.value = event.payload;
-    isScanning.value = false;
-  });
-  unlistenError = await listen<string>("scan-error", (event) => {
-    errorMessage.value = event.payload;
-    isScanning.value = false;
-  });
-});
-
-onUnmounted(() => {
-  unlistenProgress?.();
-  unlistenComplete?.();
-  unlistenError?.();
 });
 
 async function chooseFolder() {
@@ -62,24 +30,6 @@ async function chooseFolder() {
   if (typeof path === "string") {
     await settingsStore.set("mods_folder_path", path);
     modsFolderPath.value = path;
-  }
-}
-
-async function runScan() {
-  if (!modsFolderPath.value) {
-    errorMessage.value = "Set a mods folder first.";
-    return;
-  }
-  isScanning.value = true;
-  errorMessage.value = null;
-  statusMessage.value = "Starting scan...";
-  try {
-    const summary = await invoke<string>("scan_mods_directory");
-    statusMessage.value = summary;
-  } catch (e) {
-    errorMessage.value = String(e);
-  } finally {
-    isScanning.value = false;
   }
 }
 
@@ -107,9 +57,9 @@ async function checkForUpdates() {
 
 <template>
   <div>
-    <div class="mb-6 flex items-center border-b border-white/10 pb-4">
-      <VueTypography variant="H1B" as="h1" class="flex items-center gap-3">
-        <PhGear :size="20" class="opacity-70" />Settings
+    <div class="mb-6 flex items-center border-b border-white/10 pb-4 ">
+      <VueTypography variant="H1B" as="h1" class="flex items-center gap-3 h-12">
+        <PhGear :size="32" weight="fill"/>Settings
       </VueTypography>
     </div>
 
@@ -157,44 +107,6 @@ async function checkForUpdates() {
               @click="chooseGameExecutable"
               >Choose Executable</VueButton
             >
-          </div>
-        </div>
-      </div>
-
-      <div class="w-full rounded-2xl border border-white/10 bg-card p-6">
-        <div class="flex justify-between items-center">
-          <div>
-            <VueTypography variant="TitleB" as="h2" class="mb-2.5"
-              >Mod Management</VueTypography
-            >
-            <VueTypography variant="BodyR" as="p" class="text-muted-foreground">
-              Add new mods and remove deleted mods from the database
-            </VueTypography>
-            <VueTypography
-              v-if="statusMessage"
-              variant="CaptionR"
-              as="p"
-              class="mt-3.5 text-accent"
-            >
-              {{ statusMessage }}
-            </VueTypography>
-            <VueTypography
-              v-if="errorMessage"
-              variant="CaptionR"
-              as="p"
-              class="mt-3.5 text-destructive"
-            >
-              {{ errorMessage }}
-            </VueTypography>
-          </div>
-          <div class="flex items-center justify-start gap-3">
-            <VueButton
-              type="button"
-              :disabled="isScanning || !modsFolderPath"
-              @click="runScan"
-            >
-              {{ isScanning ? "Scanning…" : "Scan Now" }}
-            </VueButton>
           </div>
         </div>
       </div>
