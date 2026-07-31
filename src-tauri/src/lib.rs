@@ -57,6 +57,7 @@ pub fn run() {
             commands::mods::get_mod_keybinds,
             commands::keybinds::get_mod_persist_vars,
             commands::keybinds::set_mod_persist_var,
+            commands::keybinds::is_game_running,
             commands::launcher::launch_game,
             commands::mod_groups::list_mod_groups,
             commands::mod_groups::create_mod_group,

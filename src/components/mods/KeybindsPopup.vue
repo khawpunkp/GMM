@@ -6,6 +6,7 @@ import VueInput from '@/components/ui/input/VueInput.vue';
 import Label from '@/components/ui/input/Label.vue';
 import { VueSelect } from '@/components/ui/select';
 import VueTypography from '@/components/ui/typography/VueTypography.vue';
+import { formatKeybind } from '../../utils/keybind';
 import type { KeybindInfo, PersistVar } from '../../types';
 
 const props = defineProps<{ modId: number }>();
@@ -13,6 +14,7 @@ const emit = defineEmits<{ close: [] }>();
 
 const keybinds = ref<KeybindInfo[]>([]);
 const persistVars = ref<PersistVar[]>([]);
+const isGameRunning = ref(false);
 const isLoading = ref(true);
 const errorMessage = ref<string | null>(null);
 
@@ -21,12 +23,14 @@ const varErrors = reactive<Record<string, string>>({});
 
 onMounted(async () => {
    try {
-      const [kb, pv] = await Promise.all([
+      const [kb, pv, running] = await Promise.all([
          invoke<KeybindInfo[]>('get_mod_keybinds', { modId: props.modId }),
          invoke<PersistVar[]>('get_mod_persist_vars', { modId: props.modId }),
+         invoke<boolean>('is_game_running'),
       ]);
       keybinds.value = kb;
       persistVars.value = pv;
+      isGameRunning.value = running;
    } catch (e) {
       errorMessage.value = String(e);
    } finally {
@@ -81,15 +85,28 @@ async function saveVar(varName: string, rawValue: string) {
                   class="flex items-center justify-between rounded-md bg-white/5 px-3 py-2 text-[13px]"
                >
                   <span>{{ kb.title }}</span>
-                  <span class="rounded bg-black/30 px-2 py-0.5 font-mono">{{ kb.key }}</span>
+                  <span class="rounded bg-black/30 px-2 py-0.5 font-mono">{{ formatKeybind(kb.key) }}</span>
                </li>
             </ul>
 
             <template v-if="persistVars.length > 0">
                <VueTypography variant="TitleB" as="h2" class="mb-2.5">Toggle memory</VueTypography>
+               <VueTypography
+                  v-if="isGameRunning"
+                  variant="CaptionR"
+                  as="p"
+                  class="text-muted-foreground mb-4"
+               >
+                  The game is running, so these reflect whatever the game last set — close the game
+                  to edit them here.
+               </VueTypography>
                <div v-for="pv in persistVars" :key="pv.name" class="mb-4.5">
+                  <template v-if="isGameRunning">
+                     <Label>{{ pv.name }}</Label>
+                     <VueTypography variant="BodyR" as="p" class="mt-1">{{ pv.value }}</VueTypography>
+                  </template>
                   <VueSelect
-                     v-if="pv.options.length > 0"
+                     v-else-if="pv.options.length > 0"
                      :model-value="pv.value"
                      :label="pv.name"
                      :options="pv.options.map((opt) => ({ label: String(opt), value: opt }))"
