@@ -142,7 +142,9 @@ function handleSubmit() {
             <VueButton type="button" variant="outlined" @click="emit('close')" class="min-w-32">
                Cancel
             </VueButton>
-            <VueButton type="submit" class="min-w-32">Save</VueButton>
+            <VueButton type="submit" class="min-w-32" :disabled="!form.name.trim()">
+               Save
+            </VueButton>
          </div>
       </form>
    </div>

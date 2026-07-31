@@ -223,16 +223,8 @@ function closeGroupModal() {
             @submit="handleSubmit"
          >
             <template #actions>
-               <VueTypography
-                  v-if="agent.isBuiltin"
-                  variant="CaptionR"
-                  as="span"
-                  class="text-muted-foreground"
-               >
-                  Built-in agent — cannot be deleted
-               </VueTypography>
                <VueButton
-                  v-else
+                  v-if="!agent.isBuiltin"
                   type="button"
                   variant="outlined"
                   color="error"

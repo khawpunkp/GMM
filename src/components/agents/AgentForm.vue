@@ -84,6 +84,11 @@ const rankModel = detailModel('rank');
 const attributeModel = detailModel('attribute');
 const specialityModel = detailModel('speciality');
 
+// Mirrors create_agent/update_agent's own check: the slug is derived from the name and is the only
+// handle the /agents/[slug] route has, so a name with nothing alphanumeric in it would produce an
+// agent with no reachable detail page (and no way to reach its Delete button).
+const canSubmit = computed(() => /[a-z0-9]/i.test(name.value));
+
 const statRows = computed(() => [
    { label: 'Rank', value: details.rank, icon: RANK_ICONS[details.rank] },
    { label: 'Attribute', value: details.attribute, icon: ATTRIBUTE_ICONS[details.attribute] },
@@ -140,24 +145,17 @@ function handleSubmit() {
 </script>
 
 <template>
-   <div v-auto-animate class="bg-card max-w-160 rounded-lg border border-white/10 p-6">
-      <template v-if="!isEditing">
+   <div v-auto-animate class="bg-card rounded-lg border border-white/10 p-6">
+      <div v-if="!isEditing">
          <div class="mb-5 flex items-center gap-4">
             <img
                :src="resolveAgentImageSrc(baseImage)"
                alt=""
                class="bg-foreground size-20 rounded-lg border border-white/10 object-cover"
+               :class="{ 'p-2': !baseImage }"
             />
             <div class="flex flex-col gap-1">
                <VueTypography variant="TitleB" as="h2">{{ name }}</VueTypography>
-               <VueTypography
-                  v-if="initialAgent?.isBuiltin"
-                  variant="CaptionR"
-                  as="span"
-                  class="text-muted-foreground"
-               >
-                  Built-in agent
-               </VueTypography>
             </div>
          </div>
 
@@ -199,14 +197,15 @@ function handleSubmit() {
                Edit
             </VueButton>
          </div>
-      </template>
+      </div>
 
-      <form v-else @submit.prevent="handleSubmit">
-         <div class="mb-5 flex items-center gap-4">
+      <form v-else @submit.prevent="handleSubmit" class="flex gap-6">
+         <div class="mb-5 flex h-full w-60 flex-col items-center gap-4">
             <img
                :src="resolveAgentImageSrc(baseImage)"
                alt=""
-               class="bg-foreground size-20 rounded-lg border border-white/10 object-cover"
+               class="bg-foreground size-full rounded-lg border border-white/10 object-cover"
+               :class="{ 'p-2': !baseImage }"
             />
             <VueButton
                v-if="canEditDetails"
@@ -218,96 +217,95 @@ function handleSubmit() {
                Choose Image
             </VueButton>
          </div>
-
-         <VueTypography
-            v-if="!canEditDetails"
-            variant="CaptionR"
-            as="p"
-            class="text-muted-foreground mb-4.5"
-         >
-            This agent ships with the app — its name, image and stats are refreshed on every
-            update, so only aliases can be changed here.
-         </VueTypography>
-
-         <VueInput
-            id="agent-name"
-            v-model="name"
-            label="Name"
-            container-class="mb-4.5"
-            required
-            :disabled="!canEditDetails"
-         />
-
-         <div class="mb-4.5 flex flex-wrap gap-4">
-            <VueSelect
-               v-model="rankModel"
-               label="Rank"
-               placeholder="—"
-               clearable
-               class="min-w-40 flex-1"
-               :options="rankSelectOptions"
+         <div class="flex flex-1 flex-col gap-6">
+            <VueInput
+               id="agent-name"
+               v-model="name"
+               label="Name"
+               required
                :disabled="!canEditDetails"
             />
-            <VueSelect
-               v-model="attributeModel"
-               label="Attribute"
-               placeholder="—"
-               clearable
-               class="min-w-40 flex-1"
-               :options="attributeSelectOptions"
-               :disabled="!canEditDetails"
-            />
-            <VueSelect
-               v-model="specialityModel"
-               label="Speciality"
-               placeholder="—"
-               clearable
-               class="min-w-40 flex-1"
-               :options="specialitySelectOptions"
-               :disabled="!canEditDetails"
-            />
-         </div>
 
-         <div class="mb-4.5 flex flex-col gap-2">
-            <Label>Aliases</Label>
-            <div v-auto-animate class="mb-2.5 flex flex-wrap gap-2">
-               <span
-                  v-for="alias in aliases"
-                  :key="alias"
-                  class="bg-primary/15 flex items-center gap-1.5 rounded-full py-1 pr-1.5 pl-3 text-sm"
-               >
-                  {{ alias }}
-                  <button
-                     type="button"
-                     class="text-foreground/60 hover:text-destructive cursor-pointer p-1"
-                     @click="removeAlias(alias)"
-                  >
-                     <PhX :size="12" />
-                  </button>
-               </span>
-            </div>
-            <div class="flex gap-2">
-               <VueInput
-                  v-model="aliasInput"
-                  container-class="flex-1"
-                  placeholder="Add an alias…"
-                  @keydown.enter.prevent="addAlias"
+            <div class="flex flex-wrap gap-6">
+               <VueSelect
+                  v-model="rankModel"
+                  label="Rank"
+                  placeholder="—"
+                  clearable
+                  class="min-w-40 flex-1"
+                  :options="rankSelectOptions"
+                  :disabled="!canEditDetails"
                />
-               <VueButton type="button" variant="outlined" @click="addAlias">Add</VueButton>
+               <VueSelect
+                  v-model="attributeModel"
+                  label="Attribute"
+                  placeholder="—"
+                  clearable
+                  class="min-w-40 flex-1"
+                  :options="attributeSelectOptions"
+                  :disabled="!canEditDetails"
+               />
+               <VueSelect
+                  v-model="specialityModel"
+                  label="Speciality"
+                  placeholder="—"
+                  clearable
+                  class="min-w-40 flex-1"
+                  :options="specialitySelectOptions"
+                  :disabled="!canEditDetails"
+               />
             </div>
-         </div>
 
-         <div class="mt-2.5 flex items-center justify-end gap-3">
-            <VueButton
-               v-if="initialAgent"
-               type="button"
-               variant="outlined"
-               class="min-w-32"
-               @click="cancelEdit"
-            >
-               Cancel
-            </VueButton>
-            <VueButton type="submit" class="min-w-32">{{ submitLabel }}</VueButton>
+            <div class="flex flex-col gap-2" v-auto-animate>
+               <Label>Aliases</Label>
+               <div v-if="aliases.length > 0" v-auto-animate class="mb-2.5 flex flex-wrap gap-2">
+                  <span
+                     v-for="alias in aliases"
+                     :key="alias"
+                     class="bg-primary/15 flex items-center gap-1.5 rounded-full py-1 pr-1.5 pl-3 text-sm"
+                  >
+                     {{ alias }}
+                     <button
+                        type="button"
+                        class="text-foreground/60 hover:text-destructive cursor-pointer p-1"
+                        @click="removeAlias(alias)"
+                     >
+                        <PhX :size="12" />
+                     </button>
+                  </span>
+               </div>
+               <div class="flex gap-2">
+                  <VueInput
+                     v-model="aliasInput"
+                     container-class="flex-1"
+                     placeholder="Add an alias…"
+                     @keydown.enter.prevent="addAlias"
+                  />
+                  <VueButton
+                     type="button"
+                     variant="outlined"
+                     :disabled="!aliasInput.trim()"
+                     @click="addAlias"
+                  >
+                     Add
+                  </VueButton>
+               </div>
+            </div>
+
+            <div class="mt-2.5 flex items-center justify-end gap-3">
+               <VueButton
+                  v-if="initialAgent"
+                  type="button"
+                  variant="outlined"
+                  class="min-w-32"
+                  @click="cancelEdit"
+               >
+                  Cancel
+               </VueButton>
+               <VueButton type="submit" class="min-w-32" :disabled="!canSubmit">
+                  {{ submitLabel }}
+               </VueButton>
+            </div>
          </div>
       </form>
    </div>

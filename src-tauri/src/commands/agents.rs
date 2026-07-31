@@ -5,6 +5,21 @@ use crate::db::seed::slugify;
 use crate::models::{AgentInput, AgentWithAliases};
 use crate::DbState;
 
+/// An agent's slug is derived from its name and is the only handle the `/agents/[slug]` route has,
+/// so a name that slugifies to nothing (blank, or punctuation-only like "???") produces an agent
+/// with no reachable detail page — and therefore no way to reach its own Delete button. Reject
+/// both cases up front rather than letting an unreachable row into the table.
+fn validated_slug(name: &str) -> Result<String, String> {
+    if name.trim().is_empty() {
+        return Err("Agent name cannot be empty.".to_string());
+    }
+    let slug = slugify(name);
+    if slug.is_empty() {
+        return Err("Agent name must contain at least one letter or number.".to_string());
+    }
+    Ok(slug)
+}
+
 fn row_to_agent(conn: &Connection, id: i64) -> rusqlite::Result<AgentWithAliases> {
     let (name, slug, details, base_image, is_builtin): (
         String,
@@ -61,7 +76,7 @@ pub fn get_agent(slug: String, state: State<DbState>) -> Result<AgentWithAliases
 #[tauri::command]
 pub fn create_agent(input: AgentInput, state: State<DbState>) -> Result<AgentWithAliases, String> {
     let mut conn = state.0.lock().map_err(|e| e.to_string())?;
-    let slug = slugify(&input.name);
+    let slug = validated_slug(&input.name)?;
 
     let tx = conn.transaction().map_err(|e| e.to_string())?;
     tx.execute(
@@ -104,6 +119,10 @@ pub fn update_agent(
     // on the next update. Aliases are the one field sync leaves alone (additive-only), so those
     // still apply below.
     if is_builtin == 0 {
+        // Validate only on the path that actually writes the name — a built-in's name comes from
+        // zzz.toml and is never blank, and its alias-only save shouldn't be blocked by whatever
+        // the (disabled) name field happened to submit.
+        validated_slug(&input.name)?;
         tx.execute(
             "UPDATE agents SET name = ?1, details = ?2, base_image = ?3 WHERE id = ?4",
             params![input.name, input.details, input.base_image, id],

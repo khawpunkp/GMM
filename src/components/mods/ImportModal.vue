@@ -161,7 +161,7 @@ async function handleImport() {
                </VueButton>
                <VueButton
                   type="submit"
-                  :disabled="isImporting || (!hasFixedTarget && !pickedTarget)"
+                  :disabled="isImporting || !form.modName.trim() || (!hasFixedTarget && !pickedTarget)"
                   class="min-w-32"
                >
                   {{ isImporting ? 'Importing…' : 'Import' }}

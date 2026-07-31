@@ -121,6 +121,32 @@ fn migrate_add_mod_group_base_image(conn: &Connection) -> rusqlite::Result<()> {
     Ok(())
 }
 
+/// Clears out custom agents with a blank name. Their slug is derived from the name, so a blank one
+/// slugifies to "" — leaving an agent with no reachable `/agents/[slug]` route and therefore no way
+/// to get at its own Delete button. `create_agent` now rejects these, but any already written by an
+/// earlier build would otherwise be stuck in the table forever (and squatting the one empty slug
+/// the UNIQUE constraint allows). Any mods filed under it survive: the FK is ON DELETE SET NULL, so
+/// they simply become uncategorized and show up on the Other page.
+///
+/// Naturally idempotent — a no-op once there's nothing blank left — so no settings flag needed.
+fn repair_unnamed_agents(conn: &Connection) -> rusqlite::Result<()> {
+    let table_exists: bool = conn.query_row(
+        "SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'agents')",
+        [],
+        |row| row.get(0),
+    )?;
+    if !table_exists {
+        return Ok(());
+    }
+
+    let removed = conn.execute("DELETE FROM agents WHERE is_builtin = 0 AND TRIM(name) = ''", [])?;
+    if removed > 0 {
+        eprintln!("[db] removed {} unnamed custom agent(s) with no reachable detail page", removed);
+    }
+
+    Ok(())
+}
+
 pub fn init_db(app_data_dir: &Path) -> rusqlite::Result<Connection> {
     std::fs::create_dir_all(app_data_dir).expect("failed to create app data dir");
     let db_path = app_data_dir.join("gmm.db");
@@ -129,6 +155,7 @@ pub fn init_db(app_data_dir: &Path) -> rusqlite::Result<Connection> {
     migrate_drop_presets(&conn)?;
     migrate_drop_mod_agent_description(&conn)?;
     migrate_add_mod_group_base_image(&conn)?;
+    repair_unnamed_agents(&conn)?;
     conn.execute_batch(schema::SCHEMA)?;
     Ok(conn)
 }
