@@ -33,7 +33,6 @@ const currentTarget =
         ? `category:${props.mod.categoryId}`
         : '';
 const selectedTarget = ref(currentTarget);
-const isMoving = ref(false);
 
 const canMove = computed(
    () => selectedTarget.value !== '' && selectedTarget.value !== currentTarget,
@@ -71,27 +70,19 @@ function handleSubmit() {
       author: form.author.trim() || null,
       imageDataUrl: imageDataUrl.value,
    });
-}
 
-async function handleMove() {
-   const [kind, idStr] = selectedTarget.value.split(':');
-   const id = Number(idStr);
-   isMoving.value = true;
-   try {
+   if (canMove.value) {
+      const [kind, idStr] = selectedTarget.value.split(':');
+      const id = Number(idStr);
       emit('recategorize', kind === 'agent' ? { agentId: id } : { categoryId: id });
-   } finally {
-      isMoving.value = false;
    }
 }
 </script>
 
 <template>
-   <div
-      class="fixed inset-0 z-100 flex items-center justify-center bg-black/60"
-      @click.self="emit('close')"
-   >
+   <div class="fixed inset-0 z-100 flex items-center justify-center bg-black/60">
       <form
-         class="bg-card max-h-[85vh] w-11/12 max-w-120 overflow-y-auto rounded-2xl border border-white/10 p-6"
+         class="bg-card max-h-[85vh] w-11/12 max-w-120 overflow-y-auto rounded-lg border border-white/10 p-6"
          @submit.prevent="handleSubmit"
       >
          <VueTypography variant="TitleB" as="h2" class="mb-2.5">Edit Mod</VueTypography>
@@ -100,7 +91,7 @@ async function handleMove() {
             <img
                :src="imageDataUrl ?? '/images/placeholder.jpg'"
                alt=""
-               class="aspect-video w-full rounded-2xl border border-white/10 object-cover"
+               class="aspect-video w-full rounded-lg border border-white/10 object-cover"
             />
             <VueButton type="button" variant="outlined" size="sm" @click="pickImage">
                Choose New Image
@@ -125,22 +116,13 @@ async function handleMove() {
                placeholder="Uncategorized"
                searchable
             />
-            <div class="mt-2.5 flex items-center justify-start">
-               <VueButton
-                  type="button"
-                  variant="outlined"
-                  size="sm"
-                  :disabled="!canMove || isMoving"
-                  @click="handleMove"
-               >
-                  {{ isMoving ? 'Moving…' : 'Move to selected category' }}
-               </VueButton>
-            </div>
          </div>
 
          <div class="mt-2.5 flex items-center justify-end gap-3">
-            <VueButton type="button" variant="outlined" @click="emit('close')">Cancel</VueButton>
-            <VueButton type="submit">Save</VueButton>
+            <VueButton type="button" variant="outlined" @click="emit('close')" class="min-w-32">
+               Cancel
+            </VueButton>
+            <VueButton type="submit" class="min-w-32">Save</VueButton>
          </div>
       </form>
    </div>

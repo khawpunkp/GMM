@@ -121,11 +121,7 @@ watch(
 );
 
 function goBack() {
-   if (window.history.length > 1) {
-      router.back();
-   } else {
-      router.push('/agents');
-   }
+   router.push('/agents');
 }
 
 async function handleSubmit(input: AgentInput) {
@@ -229,6 +225,7 @@ async function groupSelected() {
                   variant="outlined"
                   color="error"
                   @click="handleDelete"
+                  class="min-w-32"
                >
                   Delete
                </VueButton>

@@ -65,7 +65,7 @@ async function checkForUpdates() {
       </div>
 
       <div class="flex flex-col gap-5">
-         <div class="bg-card w-full rounded-2xl border border-white/10 p-6">
+         <div class="bg-card w-full rounded-lg border border-white/10 p-6">
             <VueTypography variant="TitleB" as="h2" class="mb-2.5">
                Paths Configuration
             </VueTypography>
@@ -103,7 +103,7 @@ async function checkForUpdates() {
             </div>
          </div>
 
-         <div class="bg-card w-full rounded-2xl border border-white/10 p-6">
+         <div class="bg-card w-full rounded-lg border border-white/10 p-6">
             <div class="flex items-center justify-between">
                <div>
                   <VueTypography variant="TitleB" as="h2" class="mb-2.5">Updates</VueTypography>

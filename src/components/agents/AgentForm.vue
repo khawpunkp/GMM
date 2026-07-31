@@ -116,14 +116,14 @@ function handleSubmit() {
 
 <template>
    <form
-      class="bg-card max-w-160 rounded-2xl border border-white/10 p-6"
+      class="bg-card max-w-160 rounded-lg border border-white/10 p-6"
       @submit.prevent="handleSubmit"
    >
       <div class="mb-5 flex items-center gap-4">
          <img
             :src="resolveAgentImageSrc(baseImage)"
             alt=""
-            class="size-20 rounded-2xl border border-white/10 object-cover"
+            class="size-20 rounded-lg border border-white/10 object-cover"
          />
          <VueButton type="button" variant="outlined" size="sm" @click="pickImage">
             Choose Image
@@ -203,7 +203,7 @@ function handleSubmit() {
 
       <div class="mt-2.5 flex items-center justify-end gap-3">
          <slot name="actions" />
-         <VueButton type="submit">{{ submitLabel }}</VueButton>
+         <VueButton type="submit" class="min-w-32">{{ submitLabel }}</VueButton>
       </div>
    </form>
 </template>

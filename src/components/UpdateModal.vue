@@ -28,10 +28,7 @@ async function handleRestart() {
 </script>
 
 <template>
-   <div
-      class="fixed inset-0 z-100 flex items-center justify-center bg-black/60"
-      @click.self="handleClose"
-   >
+   <div class="fixed inset-0 z-100 flex items-center justify-center bg-black/60">
       <div
          class="bg-card max-h-[85vh] w-11/12 max-w-120 overflow-y-auto rounded-lg border border-white/10 p-6"
       >

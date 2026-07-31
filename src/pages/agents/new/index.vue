@@ -15,11 +15,7 @@ async function handleSubmit(input: AgentInput) {
 }
 
 function goBack() {
-   if (window.history.length > 1) {
-      router.back();
-   } else {
-      router.push('/agents');
-   }
+   router.push('/agents');
 }
 </script>
 

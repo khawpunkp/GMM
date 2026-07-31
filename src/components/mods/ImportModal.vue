@@ -103,12 +103,9 @@ async function handleImport() {
 </script>
 
 <template>
-   <div
-      class="fixed inset-0 z-100 flex items-center justify-center bg-black/60"
-      @click.self="emit('close')"
-   >
+   <div class="fixed inset-0 z-100 flex items-center justify-center bg-black/60">
       <div
-         class="bg-card max-h-[85vh] w-11/12 max-w-120 overflow-y-auto rounded-2xl border border-white/10 p-6"
+         class="bg-card max-h-[85vh] w-11/12 max-w-120 overflow-y-auto rounded-lg border border-white/10 p-6"
       >
          <VueTypography variant="TitleB" as="h2" class="mb-2.5">Import Mod</VueTypography>
 
@@ -123,6 +120,7 @@ async function handleImport() {
                   label="Import into"
                   :options="targetOptions"
                   placeholder="Choose a destination…"
+                  searchable
                />
             </div>
 
@@ -158,10 +156,13 @@ async function handleImport() {
             </VueTypography>
 
             <div class="flex items-center justify-end gap-3">
-               <VueButton type="button" variant="outlined" @click="emit('close')">Cancel</VueButton>
+               <VueButton type="button" variant="outlined" @click="emit('close')" class="min-w-32">
+                  Cancel
+               </VueButton>
                <VueButton
                   type="submit"
                   :disabled="isImporting || (!hasFixedTarget && !pickedTarget)"
+                  class="min-w-32"
                >
                   {{ isImporting ? 'Importing…' : 'Import' }}
                </VueButton>
