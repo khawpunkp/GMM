@@ -222,15 +222,9 @@ function handleSubmit() {
             </VueButton>
          </div>
          <div class="flex flex-1 flex-col gap-4">
-            <VueInput
-               id="agent-name"
-               v-model="name"
-               label="Name"
-               required
-               :disabled="!canEditDetails"
-            />
+            <VueInput v-if="canEditDetails" id="agent-name" v-model="name" label="Name" required />
 
-            <div class="flex flex-wrap gap-4">
+            <div v-if="canEditDetails" class="flex flex-wrap gap-4">
                <VueSelect
                   v-model="rankModel"
                   label="Rank"
@@ -238,7 +232,6 @@ function handleSubmit() {
                   clearable
                   class="min-w-40 flex-1"
                   :options="rankSelectOptions"
-                  :disabled="!canEditDetails"
                />
                <VueSelect
                   v-model="attributeModel"
@@ -247,7 +240,6 @@ function handleSubmit() {
                   clearable
                   class="min-w-40 flex-1"
                   :options="attributeSelectOptions"
-                  :disabled="!canEditDetails"
                />
                <VueSelect
                   v-model="specialityModel"
@@ -256,7 +248,6 @@ function handleSubmit() {
                   clearable
                   class="min-w-40 flex-1"
                   :options="specialitySelectOptions"
-                  :disabled="!canEditDetails"
                />
             </div>
 
@@ -296,7 +287,7 @@ function handleSubmit() {
                </div>
             </div>
 
-            <div class="mt-2.5 flex items-center justify-end gap-4">
+            <div class="mt-auto flex items-center justify-end gap-4">
                <VueButton
                   v-if="initialAgent"
                   type="button"

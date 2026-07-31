@@ -13,7 +13,7 @@
 - [x] Public key + GitHub Releases endpoint set in `src-tauri/tauri.conf.json`
       (`plugins.updater.pubkey` / `plugins.updater.endpoints`).
 - [x] **GitHub repo secrets** (Settings → Secrets and variables → Actions, on
-      `khawpunkp/eous-modify`) —
+      `khawpunkp/Eous-Modify`) —
       `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` added via the web UI.
 
 ## Every release, from here on

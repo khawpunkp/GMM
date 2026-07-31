@@ -53,7 +53,7 @@
       "updater": {
          "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQwN0E0QUEyOEMwODAzNUYKUldSZkF3aU1va3A2UUlHWUt2Z2VyVEZlcUp2cDhQWm9pbUMvVHkwQ2VyakNDNjBVejJ4RTl0R0YK",
          "endpoints": [
-            "https://github.com/khawpunkp/eous-modify/releases/latest/download/latest.json"
+            "https://github.com/khawpunkp/Eous-Modify/releases/latest/download/latest.json"
          ]
       }
    }
