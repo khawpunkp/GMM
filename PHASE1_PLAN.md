@@ -11,14 +11,17 @@ We're on branch `upgrade/tauri-v2-vue-refactor`. Toolchain confirmed present: No
 ## What gets removed, kept, or archived
 
 **Removed** (old React frontend, fully superseded) — already done:
+
 - `src/` entirely (`App.jsx`, `main.jsx`, `App.css`, `pages/*.jsx`, `components/*.jsx`, `contexts/SettingsContext.jsx`, `utils/localStorage.js`) — React is gone, Vue replaces it 1:1 conceptually (pages → routes, contexts → Pinia stores, components rebuilt later per-phase).
 - `src-tauri/definitions/genshin.toml`, `hsr.toml`, `wuwa.toml` — multi-game dropped per REBUILD_NOTES point 1. `zzz.toml` is **kept** (seed data for Phase 2, untouched this phase).
 - Old `package.json` React deps (react, react-dom, react-router-dom, react-select, react-toastify, react-window, recharts, framer-motion, lucide-react, @vitejs/plugin-react) — still to be removed when package.json is rewritten.
 
 **Archived, not deleted** (needed as reference in later phases) — already done:
+
 - `src-tauri/src/main.rs` → moved to `src-tauri/_legacy/main.rs.reference` (outside `src/` so Cargo won't try to compile it). Phase 3 needs its scanner/archive-import logic as reference; Phase 7 needs its `; Constants`/`[Key.*]` ini-parsing (lines ~4283-4400) for skin-toggle memory. Kept read-only, never wired into the new build.
 
 **Kept as-is:**
+
 - `vault/` (mods storage dir, already gitignored).
 - `src-tauri/icons/` (bundle icons — same app, same icon).
 - `public/fontawesome/` (locally bundled Font Awesome — old layout's icon-font `<i>` tags are ported into the new Sidebar/layout, so this stays linked from `index.html`).

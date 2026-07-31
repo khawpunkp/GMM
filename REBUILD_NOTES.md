@@ -5,12 +5,14 @@ Project: `C:\Users\kp\Desktop\workspace\gmm` — Tauri desktop mod manager for Z
 ## Decision: full rebuild from scratch (not a migration)
 
 Scanned the existing repo and it's worse than a normal migration target:
+
 - `src-tauri/src/{db,scanner,models,error,launcher,constants}.rs` are dead/orphaned — never `mod`-declared, don't compile into the binary. The real app is one 4,887-line `main.rs`.
 - The React→Vue migration is ~80% done but currently broken — `router/index.js` imports `pages/*.vue` files that don't exist (only `.jsx` remain).
 
 Given how much needed touching anyway, starting fresh is cheaper than untangling this.
 
 ## New stack
+
 Tauri v2 + Vue 3 + TypeScript. **Tailwind dropped from scope** (too token-heavy for the gain, user's call).
 
 ## Feature scope (all confirmed with user)
@@ -37,4 +39,5 @@ Tauri v2 + Vue 3 + TypeScript. **Tailwind dropped from scope** (too token-heavy 
 **Total ballpark: ~650K–1.2M tokens** for the whole thing done carefully.
 
 ## Where to start when resuming
+
 Phase 1 (scaffold) + Phase 2 (agent CRUD + aliases) together — everything else depends on that data model. Confirm the user still wants this exact scope before writing any code.

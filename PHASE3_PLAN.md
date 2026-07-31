@@ -1,4 +1,3 @@
-
 # GMM Rebuild — Phase 3: Scanner + Archive Import
 
 ## Context
@@ -31,7 +30,7 @@ I read the relevant parts of `_legacy/main.rs.reference` to understand what's be
   `<name>` or `DISABLED_<name>` currently exists. Confirms Phase 1's schema (no `is_enabled` column
   on `mods`) already matches this convention — nothing to change there.
 - Toggling enable/disable itself (the actual rename) is explicitly Phase 4 scope ("Mod management UI:
-  cards, enable/disable, presets..."), not this phase — Phase 3 only needs to *recognize* the
+  cards, enable/disable, presets..."), not this phase — Phase 3 only needs to _recognize_ the
   `DISABLED_` prefix while scanning, not flip it.
 
 ## Prerequisite gap found: no way to configure a mods folder yet
@@ -78,7 +77,7 @@ as "uncategorized" (`NULL`) instead of a fake DB row, consistent with the schema
   `(agent_id/category_id/category_item_id, folder_name)`, then prune DB rows missing from disk.
 - `src-tauri/src/scanner/deduce.rs` — the hint-gathering + matching pipeline described above,
   returning a `DeducedModInfo { agent_id: Option<i64>, category_id: Option<i64>, category_item_id:
-  Option<i64>, name, description, author, image_filename }`.
+Option<i64>, name, description, author, image_filename }`.
 - `src-tauri/src/scanner/archive.rs` — port of `analyze_archive`/`import_archive`: same three
   crate APIs (`zip`, `sevenz_rust`, `unrar` — already in `Cargo.toml` since Phase 1, unused until now),
   same mod-root detection inside an archive, extraction into the configured mods folder, then feeding
@@ -126,7 +125,7 @@ directly, which can't be constructed in a plain unit test. Refactored it to take
    files) rather than manual UI click-through: confirmed agent-match-via-parent-folder, INI
    Name-field parsing, and category fallback all resolve correctly, and a fully-unmatched folder still
    gets recorded with `NULL`/`NULL` (not dropped).
-3. Confirm a `DISABLED_`-prefixed folder scans correctly (clean name stored, no duplicate row), *and*
+3. Confirm a `DISABLED_`-prefixed folder scans correctly (clean name stored, no duplicate row), _and_
    that a `DISABLED`-without-underscore folder gets renamed and then scanned correctly. **Verified by
    the same automated test** — both cases covered explicitly.
 4. Re-run the scan after deleting a mod folder from disk — confirm the corresponding DB row is pruned.

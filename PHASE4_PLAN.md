@@ -28,7 +28,7 @@ Before writing anything, I read the relevant legacy code to understand what's be
 ## Open question: stage this phase or do it all in one pass?
 
 This phase bundles four largely-independent features (mod browsing/toggle, presets, import modal,
-keybinds+launcher). Proposing to split the *implementation* into stages while still calling it all
+keybinds+launcher). Proposing to split the _implementation_ into stages while still calling it all
 "Phase 4" per REBUILD_NOTES' numbering — each stage gets its own commit rather than one giant diff:
 
 - **4a**: mod cards + enable/disable (the core browsing experience — needed before anything else here
@@ -58,17 +58,19 @@ Let me know if you'd rather I just plan+build the whole thing in one continuous 
 ## Backend: new commands
 
 **Mods (4a)**
+
 - `list_mods(agent_id?, category_id?, category_item_id?) -> Vec<ModWithState>` — joins `mods` with a
   live-computed `is_enabled` (checked on disk, same dual-path logic as toggle/apply — never stored,
   consistent with the existing convention).
 - `toggle_mod_enabled(mod_id) -> bool` — the rename port described above.
 - `update_mod_info(mod_id, input) -> ModWithState` — name/description/author/image edit.
-- `delete_mod(mod_id)` — removes the folder from disk *and* the DB row (needs a confirmation in the UI
+- `delete_mod(mod_id)` — removes the folder from disk _and_ the DB row (needs a confirmation in the UI
   given it's destructive — no undo).
 - `open_mod_folder(mod_id)` — reveals the mod's folder in the OS file explorer (`shell:allow-open`,
   already granted since Phase 1).
 
 **Presets (4b)**
+
 - `create_preset(name) -> Preset` — snapshots every mod's current on/off state.
 - `list_presets() -> Vec<Preset>`, `delete_preset(id)`, `toggle_preset_favorite(id, is_favorite)`.
 - `apply_preset(id)` — renames whatever's out of sync with the snapshot; emits progress events same
@@ -79,6 +81,7 @@ Let me know if you'd rather I just plan+build the whole thing in one continuous 
 `import_archive`.
 
 **Keybinds + launcher (4d)**
+
 - `get_mod_keybinds(mod_id) -> Vec<KeybindInfo>` — ports `find_asset_ini_paths` + the `; Constants`
   scan described above.
 - `launch_game() -> Result<(), String>` — reads a new `game_executable_path` setting (same
@@ -127,6 +130,7 @@ launcher, which needs actual process-spawning via the plugin's Rust API — see 
 ## 4a verification
 
 **Automated** (`cargo test`, both pass):
+
 - `toggle_flips_enabled_state_and_renames_on_disk` — toggles a synthetic mod folder twice, asserts
   the rename direction and `is_mod_enabled` state each time.
 - `toggle_errors_when_folder_missing` — confirms a missing folder surfaces a clear error instead of
@@ -138,7 +142,7 @@ launcher, which needs actual process-spawning via the plugin's Rust API — see 
 real thing I found while checking the live app's state (not touching it myself — this is your actual
 game config, not test data): `mods_folder_path` is currently set to
 `...\XXMI Launcher\ZZMI\Mods\DISABLED_Astra Shining Eridu` — that's a single mod's own folder, one
-level too deep. The scanner treats whatever path you give it as the *parent* containing all mod
+level too deep. The scanner treats whatever path you give it as the _parent_ containing all mod
 folders, so pointed at one specific mod's folder it finds zero mods inside it (there's nothing to
 recurse into). You'll want to repoint it at the `...\ZZMI\Mods` folder itself via the Settings page,
 then Scan Now, to see real mod cards on the agent pages.
@@ -146,6 +150,7 @@ then Scan Now, to see real mod cards on the agent pages.
 ## 4b verification
 
 **Automated** (`cargo test`, all 5 pass across the whole crate now):
+
 - `apply_preset_restores_snapshotted_state` — creates a preset (snapshotting 2 synthetic mods, both
   enabled), disables one on disk, applies the preset, confirms it's toggled back to match the
   snapshot and confirms the untouched mod stays untouched.
@@ -172,7 +177,7 @@ form (name/description/author, a root picker if the archive has multiple likely 
 Mods section header — no new backend, exactly as planned (wires up Phase 3's already-built commands).
 
 **Deliberately narrower than it could be**: the modal always imports into whichever agent's page you
-opened it from (`agentId` prop), even if the archive's own analysis detects a *different* target (or
+opened it from (`agentId` prop), even if the archive's own analysis detects a _different_ target (or
 a category instead of an agent). A fully general import entry point — open it from anywhere, let the
 analysis's own agent/category detection freely apply, with a search-across-51-agents-and-5-categories
 picker to override — would need a real picker component I didn't build this pass. What's here covers
@@ -188,6 +193,7 @@ errors. **Not tested against a real archive** — same gap Phase 3 flagged for `
 ## 4d verification
 
 **Automated** (`cargo test`, all 8 pass across the whole crate now):
+
 - `parses_keybinds_after_constants_marker` / `ignores_key_sections_before_constants_marker` /
   `returns_empty_when_no_constants_marker` — the keybinds parser is a pure `&str -> Vec<KeybindInfo>`
   function (`parse_keybinds_from_ini`), split out specifically so it's testable without touching the
@@ -200,7 +206,7 @@ extraction — flagging rather than silently skipping.
 
 **Added beyond the original plan**: built out `pages/index.vue` (the Dashboard, a placeholder since
 Phase 1) with a Launch Game button and basic mod-count stats (total/enabled/uncategorized), since the
-launcher needed *somewhere* to live and the plan itself argued Settings shouldn't be it. Settings
+launcher needed _somewhere_ to live and the plan itself argued Settings shouldn't be it. Settings
 gained a second section (Game Executable path picker) alongside the existing Mods Folder one.
 `ModCard.vue` gained a fourth icon button (keybinds) alongside edit/open-folder/delete.
 

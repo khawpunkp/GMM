@@ -68,6 +68,7 @@ new field needed) and leave the other category tables (`npcs`/`enemies`/`weapons
 structurally unchanged — they already match what `category_items` needs.
 
 Example edit:
+
 ```toml
 { name = "Ellen", slug = "ellen", description = "...", details = '...', base_image = "ellen_base.jpg",
   aliases = ["ellen", "ellen joe", "ellenjoe", "joe"] }
@@ -81,8 +82,8 @@ you spot-check a sample before this ships).
 `src-tauri/src/db/seed.rs` (new):
 
 - `AgentDefinition { name, slug, description, details, base_image, #[serde(default)] aliases: Vec<String> }`
-  + `CharacterCategoryDefinition { name, entities: Vec<AgentDefinition> }` — parsed by removing the
-  `"characters"` key from the parsed `toml::Value` table before the generic pass.
+   - `CharacterCategoryDefinition { name, entities: Vec<AgentDefinition> }` — parsed by removing the
+     `"characters"` key from the parsed `toml::Value` table before the generic pass.
 - `CategoryItemDefinition` / `CategoryDefinition` (renamed from the old `EntityDefinition`) — same
   shape as before, parsed from whatever's left of the table after `"characters"` is removed.
 - `sync_agents(tx, &[AgentDefinition])`: UPSERT into `agents` (`is_builtin = 1` always), preserving ID

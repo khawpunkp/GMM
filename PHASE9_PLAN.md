@@ -18,6 +18,7 @@ Dashboard page outright, after Phase 8 added the 5 category tabs.
 ## What changed
 
 **Backend:**
+
 - Deleted `presets.rs`, `commands/presets.rs`; removed `mod presets;` / `pub mod presets;` /
   `commands::presets::*` handler registrations; removed the `Preset` model
 - `db/schema.rs`: dropped the `presets` / `preset_mods` table definitions
@@ -26,6 +27,7 @@ Dashboard page outright, after Phase 8 added the 5 category tabs.
   `CREATE TABLE IF NOT EXISTS` alone never removes tables from real user DBs
 
 **Frontend:**
+
 - Deleted `pages/presets.vue`, `stores/presets.ts`, `pages/index.vue` (Dashboard), the `Preset` TS
   type, and the Sidebar's favorite-presets block
 - `Sidebar.vue` rebuilt: pinned "Quick Launch" button (ported from the old Dashboard's launch

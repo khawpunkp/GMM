@@ -16,7 +16,7 @@ resolved before writing this doc):
    change below). Allowing a mod in multiple groups simultaneously has no obvious UI answer (which
    combined card does it show up in?), so this is enforced at the DB level, not just convention.
 2. **Group toggle semantics when members are in a mixed state**: a group displays as "enabled" only
-   when *every* member is enabled. Clicking the toggle: if all are currently enabled, disable all;
+   when _every_ member is enabled. Clicking the toggle: if all are currently enabled, disable all;
    otherwise (mixed or all-off), enable all. Standard "select-all checkbox" behavior — always resolves
    to a clean all-on or all-off state in one click, never ambiguous.
 
@@ -39,6 +39,7 @@ your dev DB once" approach as Phase 2's `category_items` addition — no real us
 
 `src-tauri/src/mod_groups.rs` (business logic, same split-from-commands pattern as `mods.rs`/
 `presets.rs`):
+
 - `create_group(conn, name, mod_ids)` — validates every mod_id exists and is currently ungrouped
   (rejects if any is already in a group — no auto-merge/steal), inserts the group + members.
 - `list_groups(conn, base_mods_path)` — each group's member mods + a computed `is_enabled` (all
@@ -56,7 +57,7 @@ New commands (`commands/mod_groups.rs`): `list_mod_groups`, `create_mod_group`, 
 
 `mods::list_mods`/`ModWithState` gains a `group_id: Option<i64>` (a `LEFT JOIN` against
 `mod_group_members`) so the frontend knows which mods are already grouped — needed both to render
-grouped mods as a single combined card and to know which mods are selectable for a *new* group
+grouped mods as a single combined card and to know which mods are selectable for a _new_ group
 (only ungrouped ones).
 
 ## Frontend
@@ -64,7 +65,7 @@ grouped mods as a single combined card and to know which mods are selectable for
 - `GroupCard.vue` (new, parallel to `ModCard.vue`): group name, one toggle switch (the group-level
   toggle), expand/collapse to show member mods (each with its own "Remove from group" + open-folder
   action), rename, and "Ungroup" (disband — `delete_mod_group`, not a mod delete).
-- Agent detail page's Mods section gains a **selection mode**: a checkbox appears on each *ungrouped*
+- Agent detail page's Mods section gains a **selection mode**: a checkbox appears on each _ungrouped_
   ModCard; once 2+ are checked, a "Group Selected (N)" button appears, prompts for a name, calls
   `create_mod_group`. Rendering logic partitions `modsStore.mods` by `groupId` — one `GroupCard` per
   distinct group, one `ModCard` per still-ungrouped mod.
@@ -73,7 +74,7 @@ grouped mods as a single combined card and to know which mods are selectable for
 
 ## Scoped narrower than the data model actually allows — flagging up front
 
-The backend places no restriction on a group spanning mods that belong to *different* agents or
+The backend places no restriction on a group spanning mods that belong to _different_ agents or
 categories — `create_mod_group` just takes a list of mod IDs. But the only place mod cards currently
 render is the single-agent Mods section (`pages/agents/[slug].vue`), so the selection-mode UI this
 phase builds can only group mods you can see together on one agent's page. Cross-agent grouping (e.g.
@@ -89,7 +90,7 @@ none) was handled by just telling you to delete the local dev DB — fine when i
 data. That convention doesn't hold anymore: by this phase your DB has 51 real agents, 74 real scanned
 mods, and your corrected `mods_folder_path`. Wiping it to pick up one `UNIQUE` constraint would have
 cost you a full re-scan for no reason. Added `db::migrate_mod_group_members_unique()` instead — a
-one-time, flag-gated migration in `db/mod.rs` that runs *before* `schema::SCHEMA`: drops
+one-time, flag-gated migration in `db/mod.rs` that runs _before_ `schema::SCHEMA`: drops
 `mod_group_members` if it exists in its pre-constraint shape (always safe, since the mod-grouping
 feature is brand new — no prior release could have created a real row in it), lets `schema::SCHEMA`
 recreate it correctly, then marks a `settings` flag so this never runs again. Verified directly
@@ -99,6 +100,7 @@ other real data — agents, mods, settings — came through untouched.
 ## Verification plan
 
 **Automated** (`cargo test`, all 11 pass across the whole crate now):
+
 - `create_and_toggle_group_with_mixed_state` — creates a group of 2 synthetic mods, disables one to
   produce a mixed state, confirms the group reads as not-enabled, confirms toggling a mixed group
   turns everything ON (not off), confirms toggling an all-on group turns everything OFF.

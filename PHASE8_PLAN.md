@@ -20,13 +20,13 @@ missing frontend feature, no schema change needed).
    scanner-matching data, not a browsing UI concept.
 2. **No user-facing "add category item" flow.** Only Agents keep "+ Add Agent". NPCs/Weapons having
    zero seeded items is fine — mods imported into those categories just have `category_item_id =
-   NULL` and show up in the flat grid regardless.
+NULL` and show up in the flat grid regardless.
 3. **Corrected:** each category gets a real, seeded **"Other"** `category_item` (e.g. "Other NPCs",
    "Other Enemies", ...) — a catch-all row, not just a `NULL` `category_item_id`. Anything the
    scanner/import can't match to a specific item is explicitly filed under that category's "Other"
    item rather than left unattributed. It still renders in the same flat mod-card grid as everything
    else in that category (no separate "Other" page/sub-view) — this only changes what the mod is
-   *tagged* as internally, not how it's browsed.
+   _tagged_ as internally, not how it's browsed.
 4. **"Agents" label stays as-is** (not renamed to "Characters").
 5. **Confirmed: mods can be recategorized after import.** The mod edit modal gets a
    category/agent-reassignment dropdown covering all 6 destinations (a specific Agent, or one of the
@@ -46,6 +46,7 @@ missing frontend feature, no schema change needed).
 ## What's actually new
 
 **Backend:**
+
 - `db/seed.rs::sync_categories` — after syncing each category's TOML-defined items, ensure a
   permanent `{slug}-other` "Other" item exists for that category (seeded once, excluded from the
   existing prune-unused-items loop so it's never deleted even with no mods in it)
@@ -53,7 +54,7 @@ missing frontend feature, no schema change needed).
   the category id/slug list to the frontend — needed so the sidebar/pages can resolve "npcs" →
   category_id without hardcoding numeric ids)
 - `update_mod_category(mod_id, agent_id: Option<i64>, category_id: Option<i64>, category_item_id:
-  Option<i64>)` — new command + `mods::` function. Today `update_mod`/`ModInput` only ever touch
+Option<i64>)` — new command + `mods::` function. Today `update_mod`/`ModInput` only ever touch
   name/description/author/image; there's no existing path to change a mod's agent/category
   assignment post-import at all. When `category_id` is set but `category_item_id` isn't, resolves to
   that category's "Other" item server-side — frontend never needs to know the "Other" item's id.
@@ -61,6 +62,7 @@ missing frontend feature, no schema change needed).
   behavior, so `ImportModal.vue` can keep just passing `categoryId` for the 5 flat category pages.
 
 **Frontend:**
+
 - `stores/categories.ts` (fetch + cache the 5 non-agent categories and their ids)
 - New page `pages/categories/[slug].vue` — one route, reused for all 5 tabs (category resolved from
   the route param via the categories store), mirroring the mod-grid half of `agents/[slug].vue`
@@ -90,7 +92,7 @@ missing frontend feature, no schema change needed).
       `folder_name` never drifts from the new agent/category assignment; 5 new unit tests
 - [x] `import_archive` resolves to "Other" server-side too (`mods::resolve_category_item_or_other`,
       shared by both call sites); `resolve_dest_subpath` promoted to `pub(crate)
-      resolve_category_subpath` so import and recategorize agree on folder layout
+    resolve_category_subpath` so import and recategorize agree on folder layout
 - [x] `stores/categories.ts` + `Category` TS type; `stores/mods.ts` gained `fetchByCategory` /
       `updateCategory`
 - [x] `pages/categories/[slug].vue` — one route reused for all 5 tabs, flat mod grid

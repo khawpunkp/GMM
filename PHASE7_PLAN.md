@@ -30,6 +30,7 @@ directly: your real files already have non-default values sitting in them right 
 scanned `.ini` files use this pattern.**
 
 This means GMM doesn't need to build its own persistence pipeline. It needs to:
+
 1. **Read** the current `global persist $var = N` line from `[Constants]`.
 2. **Read the valid range** for that var from whichever `[Key...]` section references it
    (`type = cycle` + `$var = a,b,c,...`) — gives a proper bounded control, not a raw number field.
@@ -41,7 +42,7 @@ This means GMM doesn't need to build its own persistence pipeline. It needs to:
 
 ## The one real timing hazard
 
-If GMM edits the file *while the game is running*, 3DMigoto flushes its own in-memory value back to
+If GMM edits the file _while the game is running_, 3DMigoto flushes its own in-memory value back to
 disk when the game exits — which could silently overwrite GMM's edit with whatever was last set
 in-game before GMM's change. **GMM must refuse to write these edits while the game process is
 running.** Needs a "is the configured game executable currently running?" check (Windows process

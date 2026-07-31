@@ -3,16 +3,16 @@
 ## One-time setup (already done, recorded here for reference)
 
 - [x] Signing keypair generated via `npx tauri signer generate`.
-  - Private key: `~/.tauri/gmm-updater.key` (on this machine: `C:\Users\kp\.tauri\gmm-updater.key`)
-  - Password: `~/.tauri/gmm-updater.password.txt` (same folder) — a random 32-character string.
-  - **Back both of these up somewhere durable (a password manager, an encrypted drive) that isn't
-    just this one machine.** If you lose them, you can never sign a valid update again — you'd have
-    to generate a new keypair, ship the new public key in one final manually-distributed release,
-    and every install would need to pick that up before auto-update works again.
+   - Private key: `~/.tauri/gmm-updater.key` (on this machine: `C:\Users\kp\.tauri\gmm-updater.key`)
+   - Password: `~/.tauri/gmm-updater.password.txt` (same folder) — a random 32-character string.
+   - **Back both of these up somewhere durable (a password manager, an encrypted drive) that isn't
+     just this one machine.** If you lose them, you can never sign a valid update again — you'd have
+     to generate a new keypair, ship the new public key in one final manually-distributed release,
+     and every install would need to pick that up before auto-update works again.
 - [x] Public key + GitHub Releases endpoint set in `src-tauri/tauri.conf.json`
-  (`plugins.updater.pubkey` / `plugins.updater.endpoints`).
+      (`plugins.updater.pubkey` / `plugins.updater.endpoints`).
 - [x] **GitHub repo secrets** (Settings → Secrets and variables → Actions, on `khawpunkp/GMM`) —
-  `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` added via the web UI.
+      `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` added via the web UI.
 
 ## Every release, from here on
 
@@ -33,7 +33,7 @@
 6. Go to **Releases** on GitHub, open the new draft, **review/edit the release notes**, confirm the
    `.msi` + `.sig` + `latest.json` are all attached, then **click "Publish release."**
    - The draft is intentional — nothing is served to existing installs until you publish it. The
-     update endpoint (`.../releases/latest/download/latest.json`) only resolves to a *published*,
+     update endpoint (`.../releases/latest/download/latest.json`) only resolves to a _published_,
      non-prerelease release.
 7. Existing installs will pick up the new version next time they check (on startup, or via the
    "Check for Updates" button in Settings, depending on how Phase 6 wires up the check).

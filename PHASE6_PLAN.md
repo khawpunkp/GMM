@@ -13,7 +13,7 @@ Phase 1 carried over the old app's `plugins.updater.pubkey`/`endpoints` unchange
 same update feed" — its own words, in hindsight the wrong call). Checked before writing anything this
 phase: both belonged to **Eidenz**, the original pre-rebuild author.
 
-- The `pubkey` is a minisign public key — only whoever holds the matching *private* key can sign
+- The `pubkey` is a minisign public key — only whoever holds the matching _private_ key can sign
   updates that validate against it. There was no way to ever publish a release this rebuilt app would
   accept.
 - The `endpoints` URL pointed at Eidenz's own live GitHub Pages feed for their original (pre-rebuild,
