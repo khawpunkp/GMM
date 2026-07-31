@@ -4,6 +4,8 @@ pub mod seed;
 use rusqlite::{Connection, OptionalExtension};
 use std::path::Path;
 
+const DB_FILENAME: &str = "eous-modify.db";
+
 /// The mod-grouping feature (and `mod_group_members`) is brand new as of this version, so it's
 /// always safe to drop and let `schema::SCHEMA` below recreate it with the `UNIQUE(mod_id)`
 /// constraint — there is no prior release where a real mod group could have existed. Gated by a
@@ -149,7 +151,7 @@ fn repair_unnamed_agents(conn: &Connection) -> rusqlite::Result<()> {
 
 pub fn init_db(app_data_dir: &Path) -> rusqlite::Result<Connection> {
     std::fs::create_dir_all(app_data_dir).expect("failed to create app data dir");
-    let db_path = app_data_dir.join("gmm.db");
+    let db_path = app_data_dir.join(DB_FILENAME);
     let conn = Connection::open(db_path)?;
     migrate_mod_group_members_unique(&conn)?;
     migrate_drop_presets(&conn)?;

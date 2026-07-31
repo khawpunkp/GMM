@@ -243,7 +243,7 @@ mod tests {
 
         static COUNTER: AtomicU32 = AtomicU32::new(0);
         let unique = COUNTER.fetch_add(1, Ordering::SeqCst);
-        let base = std::env::temp_dir().join(format!("gmm_groups_test_{}_{}", std::process::id(), unique));
+        let base = std::env::temp_dir().join(format!("eous_modify_groups_test_{}_{}", std::process::id(), unique));
         let _ = fs::remove_dir_all(&base);
 
         for name in ["ModA", "ModB", "ModC"] {

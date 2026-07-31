@@ -1067,6 +1067,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "eous-modify"
+version = "1.0.0"
+dependencies = [
+ "base64 0.22.1",
+ "lazy_static",
+ "once_cell",
+ "regex",
+ "rusqlite",
+ "rust-ini",
+ "serde",
+ "serde_json",
+ "sevenz-rust",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tauri-plugin-fs",
+ "tauri-plugin-opener",
+ "tauri-plugin-process",
+ "tauri-plugin-shell",
+ "tauri-plugin-updater",
+ "thiserror 1.0.69",
+ "toml 0.8.20",
+ "unrar",
+ "walkdir",
+ "zip 0.6.6",
+]
+
+[[package]]
 name = "equivalent"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1538,34 +1566,6 @@ name = "glob"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a8d1add55171497b4705a648c6b583acafb01d58050a51727785f0b2c8e0a2b2"
-
-[[package]]
-name = "gmm"
-version = "1.0.0"
-dependencies = [
- "base64 0.22.1",
- "lazy_static",
- "once_cell",
- "regex",
- "rusqlite",
- "rust-ini",
- "serde",
- "serde_json",
- "sevenz-rust",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-fs",
- "tauri-plugin-opener",
- "tauri-plugin-process",
- "tauri-plugin-shell",
- "tauri-plugin-updater",
- "thiserror 1.0.69",
- "toml 0.8.20",
- "unrar",
- "walkdir",
- "zip 0.6.6",
-]
 
 [[package]]
 name = "gobject-sys"

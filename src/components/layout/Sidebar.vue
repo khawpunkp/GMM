@@ -213,7 +213,11 @@ async function runScan() {
          </li>
       </ul>
 
-      <VueButton class="mt-4 w-full justify-center" @click="openModsFolder">
+      <VueButton
+         :disabled="!modsFolderPath"
+         class="mt-4 w-full justify-center"
+         @click="openModsFolder"
+      >
          <PhFolderOpen :size="24" weight="fill" />
          Open Mods Folder
       </VueButton>

@@ -223,7 +223,7 @@ mod tests {
     fn build_test_mods_dir() -> PathBuf {
         static COUNTER: AtomicU32 = AtomicU32::new(0);
         let unique = COUNTER.fetch_add(1, Ordering::SeqCst);
-        let base = std::env::temp_dir().join(format!("gmm_scanner_test_{}_{}", std::process::id(), unique));
+        let base = std::env::temp_dir().join(format!("eous_modify_scanner_test_{}_{}", std::process::id(), unique));
         let _ = fs::remove_dir_all(&base);
 
         let ellen_skin = base.join("Ellen").join("EllenSkin_v2");
@@ -311,7 +311,7 @@ mod tests {
 
         static COUNTER: AtomicU32 = AtomicU32::new(0);
         let unique = COUNTER.fetch_add(1, Ordering::SeqCst);
-        let base = std::env::temp_dir().join(format!("gmm_scanner_remap_test_{}_{}", std::process::id(), unique));
+        let base = std::env::temp_dir().join(format!("eous_modify_scanner_remap_test_{}_{}", std::process::id(), unique));
         let _ = fs::remove_dir_all(&base);
         // Parent folder name only needs to *contain* the "astra" alias, not equal the agent's
         // slug exactly — keeps the pre- and post-move paths unambiguously distinct.

@@ -309,7 +309,7 @@ mod tests {
     fn build_test_mod_dir() -> (PathBuf, String) {
         static COUNTER: AtomicU32 = AtomicU32::new(0);
         let unique = COUNTER.fetch_add(1, Ordering::SeqCst);
-        let base = std::env::temp_dir().join(format!("gmm_mods_test_{}_{}", std::process::id(), unique));
+        let base = std::env::temp_dir().join(format!("eous_modify_mods_test_{}_{}", std::process::id(), unique));
         let _ = fs::remove_dir_all(&base);
 
         let folder_name = "TestMod".to_string();
@@ -341,7 +341,7 @@ mod tests {
 
     #[test]
     fn toggle_errors_when_folder_missing() {
-        let base = std::env::temp_dir().join(format!("gmm_mods_test_missing_{}", std::process::id()));
+        let base = std::env::temp_dir().join(format!("eous_modify_mods_test_missing_{}", std::process::id()));
         let result = toggle_mod(&base, "DoesNotExist");
         assert!(result.is_err());
     }
@@ -352,7 +352,7 @@ mod tests {
 
         static COUNTER: AtomicU32 = AtomicU32::new(0);
         let unique = COUNTER.fetch_add(1, Ordering::SeqCst);
-        let base = std::env::temp_dir().join(format!("gmm_mods_category_test_{}_{}", std::process::id(), unique));
+        let base = std::env::temp_dir().join(format!("eous_modify_mods_category_test_{}_{}", std::process::id(), unique));
         let _ = fs::remove_dir_all(&base);
 
         conn.execute("INSERT INTO categories (id, name, slug) VALUES (1, 'NPCs', 'npcs')", [])

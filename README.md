@@ -1,4 +1,4 @@
-# GMM - Mod Manager
+# Eous Modify - Mod Manager
 
 ![Characters List](https://github.com/user-attachments/assets/c45b7d4d-6a2a-45a9-8f44-ded6ef450b1d)
 
@@ -7,7 +7,7 @@
 [![Latest Release](https://img.shields.io/github/v/release/Eidenz/gmm-updates?label=Latest%20Release&style=for-the-badge)](https://github.com/Eidenz/gmm/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/Eidenz/gmm-updates/total?style=for-the-badge)](https://github.com/Eidenz/gmm/releases)
 
-GMM aims to simplify the process of installing, organizing, and switching between game mods. It provides a clean user interface and useful tools like presets and keybind viewing.
+Eous Modify aims to simplify the process of installing, organizing, and switching between game mods. It provides a clean user interface and useful tools like presets and keybind viewing.
 
 ---
 
@@ -15,9 +15,9 @@ GMM aims to simplify the process of installing, organizing, and switching betwee
 
 - **🎮 Multi-Game Support:** Manage mods for different games (currently supports **Genshin Impact** and **Zenless Zone Zero**) with separate configurations and databases. Easily switch between supported games.
 - **🗂️ Mod Library & Categorization:** Automatically scans your mods folder and organizes mods by category (Characters, Weapons, UI, etc.) and entity for the selected game.
-- **🖱️ Simple Enable/Disable:** Easily toggle mods on or off with a switch. GMM handles the `DISABLED_` prefix renaming for you.
+- **🖱️ Simple Enable/Disable:** Easily toggle mods on or off with a switch. Eous Modify handles the `DISABLED_` prefix renaming for you.
 - **🖱️ Drag & Drop Import:** Drag archive files (.zip, .7z, .rar) directly onto the application window to initiate the import process.
-- **📦 Enhanced Archive Import (.zip, .7z, .rar):** Import mods directly from archive files. GMM analyzes contents (including INI hints), suggests mod details, allows root folder selection, or extracts all files.
+- **📦 Enhanced Archive Import (.zip, .7z, .rar):** Import mods directly from archive files. Eous Modify analyzes contents (including INI hints), suggests mod details, allows root folder selection, or extracts all files.
 - **🤖 Advanced Mod Info Deduction:** Attempts to deduce mod name, author, and target entity from folder structure, internal filenames, and INI files during scan/import.
 - **✨ Presets System:** Save your current mod setup as a preset for the active game and quickly switch between different mod combinations. Mark favorites for quick access via the sidebar.
 - **📊 Enhanced Dashboard:** Get a quick glance at your library stats for the active game, including total mods, enabled/disabled counts, and category breakdowns with visual charts.
@@ -55,12 +55,12 @@ GMM aims to simplify the process of installing, organizing, and switching betwee
    - On first launch, you'll be prompted to select the game you want to configure first (e.g., Genshin Impact).
    - You _must_ select the main folder where you store your mods for that specific game (e.g., `...\GIMI\Mods`).
    - Optionally, select the game or launcher executable for Quick Launch for that game.
-2. **Switching Games:** Use the game switcher on the **Dashboard** or in the **Initial Setup** screen. Switching games requires an application restart (GMM will prompt and handle this). Settings and mods are kept separate for each game.
+2. **Switching Games:** Use the game switcher on the **Dashboard** or in the **Initial Setup** screen. Switching games requires an application restart (Eous Modify will prompt and handle this). Settings and mods are kept separate for each game.
 3. **Scanning:** After setting the mods folder for a game, go to **Settings -> Scan Mods Folder -> Scan Now**. This populates the library for the _currently active_ game.
 4. **Importing:**
    - **Method 1 (Button):** Click the **Import Mod** button in the sidebar. Select a `.zip`, `.7z`, or `.rar` archive.
-   - **Method 2 (Drag & Drop):** Drag and drop a supported archive file directly onto the GMM window.
-   - **Process:** Review the detected archive contents. GMM may suggest a root folder. Select the correct **Mod Root Folder** (containing the INI/mod files) OR check **Extract All Files**. Fill in/correct the Mod Name, Target Entity (for the current game), and other details. Click **Confirm Import**.
+   - **Method 2 (Drag & Drop):** Drag and drop a supported archive file directly onto the Eous Modify window.
+   - **Process:** Review the detected archive contents. Eous Modify may suggest a root folder. Select the correct **Mod Root Folder** (containing the INI/mod files) OR check **Extract All Files**. Fill in/correct the Mod Name, Target Entity (for the current game), and other details. Click **Confirm Import**.
 5. **Browsing:** Use the sidebar to navigate the library for the _currently active_ game. Click on an entity card (e.g., Raiden Shogun) to view its mods.
 6. **Managing Mods:**
    - Click the toggle switch on a mod card (Grid view) or list item (List view) to enable or disable it.
@@ -78,7 +78,7 @@ GMM aims to simplify the process of installing, organizing, and switching betwee
    - Enter a name and click **Create Preset** to save the current mod configuration for this game.
    - Click the play icon next to a preset to apply it.
    - Use other icons to overwrite, favorite (appears in sidebar), or delete presets.
-9. **Quick Launch:** Click the **Quick Launch** button in the sidebar. GMM will attempt a standard launch first. If that fails with an elevation error (on Windows), it will prompt for admin permission to launch elevated.
+9. **Quick Launch:** Click the **Quick Launch** button in the sidebar. Eous Modify will attempt a standard launch first. If that fails with an elevation error (on Windows), it will prompt for admin permission to launch elevated.
 
 ---
 

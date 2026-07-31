@@ -59,7 +59,7 @@ pub fn slugify(input: &str) -> String {
 }
 
 /// Version-gated sync of `definitions/zzz.toml` into the agents/categories tables.
-/// Ported from the old app's `sync_definitions` (see src-tauri/_legacy/main.rs.reference:1256),
+/// Ported from the pre-rebuild app's `sync_definitions` (its `main.rs` is in this repo's history),
 /// split into an agents path and a categories path since the new schema separates the two.
 pub fn sync_definitions(conn: &mut Connection, app_handle: &AppHandle) -> Result<(), String> {
     let current_version = app_handle.package_info().version.to_string();

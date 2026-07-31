@@ -1,17 +1,19 @@
-# GMM Release Checklist
+# Eous Modify Release Checklist
 
 ## One-time setup (already done, recorded here for reference)
 
 - [x] Signing keypair generated via `npx tauri signer generate`.
-   - Private key: `~/.tauri/gmm-updater.key` (on this machine: `C:\Users\kp\.tauri\gmm-updater.key`)
-   - Password: `~/.tauri/gmm-updater.password.txt` (same folder) — a random 32-character string.
+   - Private key: `~/.tauri/eous-modify-updater.key`
+   - Password: `~/.tauri/eous-modify-updater.password.txt` (same folder) — a random 32-character
+     string.
    - **Back both of these up somewhere durable (a password manager, an encrypted drive) that isn't
      just this one machine.** If you lose them, you can never sign a valid update again — you'd have
      to generate a new keypair, ship the new public key in one final manually-distributed release,
      and every install would need to pick that up before auto-update works again.
 - [x] Public key + GitHub Releases endpoint set in `src-tauri/tauri.conf.json`
       (`plugins.updater.pubkey` / `plugins.updater.endpoints`).
-- [x] **GitHub repo secrets** (Settings → Secrets and variables → Actions, on `khawpunkp/GMM`) —
+- [x] **GitHub repo secrets** (Settings → Secrets and variables → Actions, on
+      `khawpunkp/eous-modify`) —
       `TAURI_SIGNING_PRIVATE_KEY` and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` added via the web UI.
 
 ## Every release, from here on

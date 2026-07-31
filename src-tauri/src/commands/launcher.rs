@@ -24,7 +24,8 @@ pub async fn launch_game(state: State<'_, DbState>, app_handle: AppHandle) -> Re
         Err(e) => {
             let msg = e.to_string();
             return Err(if msg.contains("os error 740") {
-                "Failed to launch: the game requires administrator privileges. Try running GMM as administrator.".to_string()
+                "Failed to launch: the game requires administrator privileges. Try running Eous Modify as administrator."
+                    .to_string()
             } else {
                 format!("Failed to spawn executable: {}", msg)
             });
