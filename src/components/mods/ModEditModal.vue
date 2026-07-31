@@ -8,6 +8,7 @@ import { VueSelect } from '@/components/ui/select';
 import VueTypography from '@/components/ui/typography/VueTypography.vue';
 import { useAgentsStore } from '../../stores/agents';
 import { useCategoriesStore } from '../../stores/categories';
+import { useSettingsStore } from '../../stores/settings';
 import type { Mod, ModInput } from '../../types';
 
 const props = defineProps<{ mod: Mod }>();
@@ -19,12 +20,16 @@ const emit = defineEmits<{
 
 const agentsStore = useAgentsStore();
 const categoriesStore = useCategoriesStore();
+const settingsStore = useSettingsStore();
 
 const form = reactive({
    name: props.mod.name,
    author: props.mod.author ?? '',
 });
-const imageDataUrl = ref<string | null>(null);
+// Shown in the preview; distinct from newImageDataUrl so opening/saving without touching the
+// image doesn't resend the existing preview as if it were a fresh one.
+const previewSrc = ref<string | null>(null);
+const newImageDataUrl = ref<string | null>(null);
 
 const currentTarget =
    props.mod.agentId !== null
@@ -49,9 +54,22 @@ const categoryOptions = computed(() => [
    })),
 ]);
 
-onMounted(() => {
+onMounted(async () => {
    if (agentsStore.agents.length === 0) agentsStore.fetchAll();
    if (categoriesStore.categories.length === 0) categoriesStore.fetchAll();
+
+   if (props.mod.imageFilename) {
+      const modsFolderPath =
+         settingsStore.settings.mods_folder_path ?? (await settingsStore.fetch('mods_folder_path'));
+      if (modsFolderPath) {
+         const fullPath = `${modsFolderPath}/${props.mod.folderName}/${props.mod.imageFilename}`;
+         try {
+            previewSrc.value = await invoke<string>('read_image_as_data_url', { path: fullPath });
+         } catch {
+            previewSrc.value = null;
+         }
+      }
+   }
 });
 
 async function pickImage() {
@@ -60,7 +78,9 @@ async function pickImage() {
       filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif'] }],
    });
    if (typeof path === 'string') {
-      imageDataUrl.value = await invoke<string>('read_image_as_data_url', { path });
+      const dataUrl = await invoke<string>('read_image_as_data_url', { path });
+      newImageDataUrl.value = dataUrl;
+      previewSrc.value = dataUrl;
    }
 }
 
@@ -68,7 +88,7 @@ function handleSubmit() {
    emit('submit', {
       name: form.name.trim(),
       author: form.author.trim() || null,
-      imageDataUrl: imageDataUrl.value,
+      imageDataUrl: newImageDataUrl.value,
    });
 
    if (canMove.value) {
@@ -89,7 +109,7 @@ function handleSubmit() {
 
          <div class="mb-5 flex flex-col items-center gap-4">
             <img
-               :src="imageDataUrl ?? '/images/placeholder.jpg'"
+               :src="previewSrc ?? '/images/placeholder.jpg'"
                alt=""
                class="aspect-video w-full rounded-lg border border-white/10 object-cover"
             />

@@ -78,8 +78,6 @@ const specialityIcon = computed(() =>
          <div class="-mt-4 h-10 rounded-b-lg" :style="{ backgroundColor: barColor }" />
 
          <div class="flex grow flex-col justify-center p-4 text-center">
-            {{ agent.baseImage }}
-
             <VueTypography variant="BodyB" as="span">{{ agent.name }}</VueTypography>
          </div>
       </VueCard>
