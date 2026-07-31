@@ -7,7 +7,6 @@ import VueButton from '@/components/ui/button/VueButton.vue';
 import VueInput from '@/components/ui/input/VueInput.vue';
 import Label from '@/components/ui/input/Label.vue';
 import { VueSelect } from '@/components/ui/select';
-import VueCheckbox from '@/components/ui/checkbox/VueCheckbox.vue';
 import type { Agent, AgentDetails, AgentInput } from '../../types';
 import { parseAgentDetails, resolveAgentImageSrc, serializeAgentDetails } from '../../utils/agent';
 
@@ -36,7 +35,6 @@ const ATTRIBUTE_OPTIONS = [
    'Lumiflux',
 ];
 const SPECIALITY_OPTIONS = ['Attack', 'Stun', 'Anomaly', 'Support', 'Defense', 'Rupture'];
-const TYPE_OPTIONS = ['Slash', 'Strike', 'Pierce'];
 
 const toSelectOptions = (opts: string[]) => opts.map((opt) => ({ label: opt, value: opt }));
 const rankSelectOptions = toSelectOptions(RANK_OPTIONS);
@@ -83,15 +81,6 @@ function addAlias() {
 function removeAlias(alias: string) {
    const index = aliases.indexOf(alias);
    if (index !== -1) aliases.splice(index, 1);
-}
-
-function toggleType(type: string) {
-   const index = details.type.indexOf(type);
-   if (index === -1) {
-      details.type.push(type);
-   } else {
-      details.type.splice(index, 1);
-   }
 }
 
 async function pickImage() {
@@ -157,19 +146,6 @@ function handleSubmit() {
             class="min-w-40 flex-1"
             :options="specialitySelectOptions"
          />
-      </div>
-
-      <div class="mb-4.5 flex flex-col gap-2">
-         <Label>Type</Label>
-         <div class="flex flex-wrap gap-4">
-            <label v-for="opt in TYPE_OPTIONS" :key="opt" class="flex items-center gap-2 text-sm">
-               <VueCheckbox
-                  :model-value="details.type.includes(opt)"
-                  @update:model-value="() => toggleType(opt)"
-               />
-               {{ opt }}
-            </label>
-         </div>
       </div>
 
       <div class="mb-4.5 flex flex-col gap-2">

@@ -10,7 +10,6 @@ const EMPTY_DETAILS: AgentDetails = {
    rank: '',
    attribute: '',
    speciality: '',
-   type: [],
 };
 
 export function parseAgentDetails(details: string | null): AgentDetails {
@@ -21,7 +20,6 @@ export function parseAgentDetails(details: string | null): AgentDetails {
          rank: parsed.rank ?? '',
          attribute: parsed.attribute ?? '',
          speciality: parsed.speciality ?? '',
-         type: Array.isArray(parsed.type) ? parsed.type.filter(Boolean) : [],
       };
    } catch {
       return { ...EMPTY_DETAILS };

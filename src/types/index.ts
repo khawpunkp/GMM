@@ -13,7 +13,6 @@ export interface AgentDetails {
    rank: string;
    attribute: string;
    speciality: string;
-   type: string[];
 }
 
 export interface AgentInput {
