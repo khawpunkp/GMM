@@ -10,9 +10,12 @@ use walkdir::WalkDir;
 
 use deduce::{deduce_mod_info, fetch_deduction_maps, has_ini_file, DISABLED_PREFIX};
 
+use crate::mods::update_mod_category;
+
 /// Ports the old app's `scan_mods_directory`: walks the mods folder, identifies mod folders by
 /// a non-excluded `.ini` file, fixes up a `DISABLED` -> `DISABLED_` naming inconsistency, runs the
-/// deduction pipeline for new folders, then prunes DB rows for mods no longer found on disk.
+/// deduction pipeline for new folders, re-checks already-known mods that still have no agent in
+/// case they can now be matched, then prunes DB rows for mods no longer found on disk.
 ///
 /// `on_progress(processed_count, current_path)` fires once per mod folder found — kept as a plain
 /// closure (no Tauri `AppHandle`) so this can run in a unit test as well as behind a real command.
@@ -30,6 +33,7 @@ pub fn run_scan(
     let mut found_folder_names = HashSet::<String>::new();
     let mut added = 0usize;
     let mut renamed = 0usize;
+    let mut remapped = 0usize;
     let mut errors = 0usize;
     let mut processed = 0usize;
 
@@ -105,36 +109,62 @@ pub fn run_scan(
 
         found_folder_names.insert(clean_relative_path_str.clone());
 
-        let existing_id: Option<i64> = conn
+        let existing: Option<(i64, Option<i64>)> = conn
             .query_row(
-                "SELECT id FROM mods WHERE folder_name = ?1",
+                "SELECT id, agent_id FROM mods WHERE folder_name = ?1",
                 params![clean_relative_path_str],
-                |row| row.get(0),
+                |row| Ok((row.get(0)?, row.get(1)?)),
             )
             .ok();
 
-        if existing_id.is_none() {
-            let deduced = deduce_mod_info(&current_path, base_mods_path, &maps);
-            let insert_result = conn.execute(
-                "INSERT INTO mods (agent_id, category_id, category_item_id, name, folder_name, image_filename, author)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
-                params![
-                    deduced.agent_id,
-                    deduced.category_id,
-                    deduced.category_item_id,
-                    deduced.name,
-                    clean_relative_path_str,
-                    deduced.image_filename,
-                    deduced.author,
-                ],
-            );
-            match insert_result {
-                Ok(_) => added += 1,
-                Err(e) => {
-                    eprintln!("[scan] failed to insert mod '{}': {}", clean_relative_path_str, e);
-                    errors += 1;
+        match existing {
+            None => {
+                let deduced = deduce_mod_info(&current_path, base_mods_path, &maps);
+                let insert_result = conn.execute(
+                    "INSERT INTO mods (agent_id, category_id, category_item_id, name, folder_name, image_filename, author)
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+                    params![
+                        deduced.agent_id,
+                        deduced.category_id,
+                        deduced.category_item_id,
+                        deduced.name,
+                        clean_relative_path_str,
+                        deduced.image_filename,
+                        deduced.author,
+                    ],
+                );
+                match insert_result {
+                    Ok(_) => added += 1,
+                    Err(e) => {
+                        eprintln!("[scan] failed to insert mod '{}': {}", clean_relative_path_str, e);
+                        errors += 1;
+                    }
                 }
             }
+            // Already known but still unmapped to an agent — re-run deduction in case it can be
+            // matched now (e.g. the agent was added, or an alias was added, after this mod was
+            // first scanned). Reuses update_mod_category so the folder actually moves under the
+            // agent's own subfolder, same as a manual recategorize would do.
+            Some((mod_id, None)) => {
+                let deduced = deduce_mod_info(&current_path, base_mods_path, &maps);
+                if let Some(agent_id) = deduced.agent_id {
+                    match update_mod_category(conn, base_mods_path, mod_id, Some(agent_id), None, None) {
+                        // update_mod_category moves the mod's folder (and its DB folder_name) to
+                        // live under the agent's own subfolder — track the new name too, or the
+                        // prune pass below (which only knows the pre-move name) deletes it as
+                        // "missing" in this same scan.
+                        Ok(updated) => {
+                            found_folder_names.insert(updated.folder_name);
+                            remapped += 1;
+                        }
+                        Err(e) => {
+                            eprintln!("[scan] failed to map mod '{}' to an agent: {}", clean_relative_path_str, e);
+                            errors += 1;
+                        }
+                    }
+                }
+            }
+            Some((_, Some(_))) => {}
         }
     }
 
@@ -154,8 +184,8 @@ pub fn run_scan(
     }
 
     Ok(format!(
-        "Scan complete. Processed {} mod folders. Added {} new mods. Pruned {} missing mods. Renamed {} folders. {} errors.",
-        processed, added, pruned, renamed, errors
+        "Scan complete. Processed {} mod folders. Added {} new mods. Mapped {} mods to an agent. Pruned {} missing mods. Renamed {} folders. {} errors.",
+        processed, added, remapped, pruned, renamed, errors
     ))
 }
 
@@ -271,6 +301,53 @@ mod tests {
             .expect("uncategorized mod should still be recorded");
         assert!(agent_id3.is_none());
         assert!(category_id3.is_none());
+
+        fs::remove_dir_all(&base).ok();
+    }
+
+    #[test]
+    fn rescan_maps_previously_unmatched_mod_once_its_agent_exists() {
+        let mut conn = setup_test_db();
+
+        static COUNTER: AtomicU32 = AtomicU32::new(0);
+        let unique = COUNTER.fetch_add(1, Ordering::SeqCst);
+        let base = std::env::temp_dir().join(format!("gmm_scanner_remap_test_{}_{}", std::process::id(), unique));
+        let _ = fs::remove_dir_all(&base);
+        // Parent folder name only needs to *contain* the "astra" alias, not equal the agent's
+        // slug exactly — keeps the pre- and post-move paths unambiguously distinct.
+        let mod_dir = base.join("SomeAstraFolder").join("AstraSkin");
+        fs::create_dir_all(&mod_dir).unwrap();
+        fs::write(mod_dir.join("mod.ini"), "").unwrap();
+
+        run_scan(&mut conn, &base, |_, _| {}).expect("first scan should succeed");
+        let (mod_id, agent_id): (i64, Option<i64>) = conn
+            .query_row("SELECT id, agent_id FROM mods WHERE folder_name = 'SomeAstraFolder/AstraSkin'", [], |row| {
+                Ok((row.get(0)?, row.get(1)?))
+            })
+            .expect("mod should be recorded, unmatched");
+        assert!(agent_id.is_none(), "no 'Astra' agent exists yet, so it should be unmapped");
+
+        conn.execute("INSERT INTO agents (name, slug, is_builtin) VALUES ('Astra', 'astra', 1)", [])
+            .unwrap();
+        let astra_id = conn.last_insert_rowid();
+        conn.execute(
+            "INSERT INTO agent_aliases (agent_id, alias) VALUES (?1, 'astra')",
+            params![astra_id],
+        )
+        .unwrap();
+
+        let summary = run_scan(&mut conn, &base, |_, _| {}).expect("second scan should succeed");
+        println!("{summary}");
+
+        let (new_id, new_agent_id, new_folder_name): (i64, Option<i64>, String) = conn
+            .query_row("SELECT id, agent_id, folder_name FROM mods WHERE folder_name = 'astra/AstraSkin'", [], |row| {
+                Ok((row.get(0)?, row.get(1)?, row.get(2)?))
+            })
+            .expect("mod should now be found at its agent-scoped folder path");
+        assert_eq!(new_id, mod_id, "remapping should update the existing row, not create a new one");
+        assert_eq!(new_agent_id, Some(astra_id), "mod should now be mapped to the Astra agent");
+        assert!(base.join("astra").join("AstraSkin").is_dir(), "folder should have physically moved under the agent's subfolder");
+        assert_ne!(new_folder_name, "SomeAstraFolder/AstraSkin");
 
         fs::remove_dir_all(&base).ok();
     }
