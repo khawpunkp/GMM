@@ -38,7 +38,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/utils/general';
 
 const baseStyle = [
-   'relative items-center justify-center overflow-hidden',
+   'relative items-center justify-center overflow-hidden hover:scale-[1.03]',
    'flex gap-2 px-4 shrink-0',
    'rounded-lg',
    'transition-all duration-500',

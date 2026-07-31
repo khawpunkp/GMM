@@ -11,6 +11,7 @@
       "format": "prettier --write ."
    },
    "dependencies": {
+      "@formkit/auto-animate": "^0.10.0",
       "@phosphor-icons/vue": "^2.2.1",
       "@tailwindcss/vite": "^4.3.3",
       "@tauri-apps/api": "^2.11.1",

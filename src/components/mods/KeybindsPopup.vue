@@ -41,7 +41,7 @@ onMounted(async () => {
                <img src="/images/no-data.png" class="w-50" />
             </div>
 
-            <ul v-else class="mt-2.5 mb-5 flex flex-col gap-2">
+            <ul v-else v-auto-animate class="mt-2.5 mb-5 flex flex-col gap-2">
                <li
                   v-for="kb in keybinds"
                   :key="kb.title"

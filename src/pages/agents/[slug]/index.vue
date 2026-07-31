@@ -113,10 +113,17 @@ watch(
    () => route.params.slug,
    async (slug) => {
       if (!slug) return;
+      // Re-gate: agent-to-agent navigation reuses this component, and the mods store still holds
+      // the previous agent's mods until the new fetch lands.
+      isLoading.value = true;
       search.value = '';
-      agent.value = await agentsStore.fetchOne(slug);
-      loadSortOption(slug);
-      await loadMods();
+      try {
+         agent.value = await agentsStore.fetchOne(slug);
+         loadSortOption(slug);
+         await loadMods();
+      } finally {
+         isLoading.value = false;
+      }
    },
 );
 
@@ -269,38 +276,41 @@ async function groupSelected() {
                </div>
             </div>
 
-            <div
-               v-if="
-                  modsStore.mods.length === 0 ||
-                  (sortedFilteredMods.length === 0 && filteredGroups.length === 0)
-               "
-               class="flex min-h-50 flex-1 items-center justify-center"
-            >
-               <img src="/images/no-data.png" class="w-50" />
-            </div>
+            <template v-if="!isLoading">
+               <div
+                  v-if="
+                     modsStore.mods.length === 0 ||
+                     (sortedFilteredMods.length === 0 && filteredGroups.length === 0)
+                  "
+                  class="flex min-h-50 flex-1 items-center justify-center"
+               >
+                  <img src="/images/no-data.png" class="w-50" />
+               </div>
 
-            <div
-               v-else
-               class="grid gap-4"
-               style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr))"
-            >
-               <GroupCard
-                  v-for="group in filteredGroups"
-                  :key="`group-${group.id}`"
-                  :group="group"
-               />
-               <ModCard
-                  v-for="mod in sortedFilteredMods"
-                  :key="mod.id"
-                  :mod="mod"
-                  :select-mode="isSelecting"
-                  :selected="selectedModIds.has(mod.id)"
-                  @edit="editingMod = $event"
-                  @delete="handleModDelete"
-                  @keybinds="keybindsMod = $event"
-                  @toggle-select="toggleSelect"
-               />
-            </div>
+               <div
+                  v-else
+                  v-auto-animate
+                  class="grid gap-4"
+                  style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr))"
+               >
+                  <GroupCard
+                     v-for="group in filteredGroups"
+                     :key="`group-${group.id}`"
+                     :group="group"
+                  />
+                  <ModCard
+                     v-for="mod in sortedFilteredMods"
+                     :key="mod.id"
+                     :mod="mod"
+                     :select-mode="isSelecting"
+                     :selected="selectedModIds.has(mod.id)"
+                     @edit="editingMod = $event"
+                     @delete="handleModDelete"
+                     @keybinds="keybindsMod = $event"
+                     @toggle-select="toggleSelect"
+                  />
+               </div>
+            </template>
          </div>
       </template>
 

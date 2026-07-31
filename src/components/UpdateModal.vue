@@ -50,7 +50,7 @@ async function handleRestart() {
          <div v-if="updaterStore.isDownloading" class="my-2.5">
             <div class="h-2 w-full overflow-hidden rounded-full bg-white/10">
                <div
-                  class="bg-primary h-full transition-[width]"
+                  class="bg-primary h-full transition-all"
                   :style="{ width: (progressPercent ?? 0) + '%' }"
                ></div>
             </div>

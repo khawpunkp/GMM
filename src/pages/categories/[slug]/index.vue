@@ -211,7 +211,7 @@ async function groupSelected() {
       </div>
 
       <p v-if="errorMessage" class="text-destructive">{{ errorMessage }}</p>
-      <template v-else>
+      <template v-else-if="!isLoading">
          <div
             v-if="
                modsStore.mods.length === 0 ||
@@ -224,6 +224,7 @@ async function groupSelected() {
 
          <div
             v-else
+            v-auto-animate
             class="grid gap-4"
             style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr))"
          >

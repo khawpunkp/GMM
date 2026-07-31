@@ -49,9 +49,11 @@ async function disband() {
 
 <template>
    <VueCard
-      class="border-primary/30 flex flex-col gap-2.5 p-3.5 transition-opacity"
+      class="border-primary/30 flex flex-col gap-4 p-4 transition-all"
       :class="{ 'opacity-50': !group.isEnabled }"
+      v-auto-animate
    >
+      <img alt="" class="aspect-video w-full rounded-sm object-cover" />
       <div class="flex items-center gap-2">
          <button
             type="button"
@@ -94,7 +96,7 @@ async function disband() {
          />
          <button
             type="button"
-            class="text-foreground/70 cursor-pointer p-1 hover:opacity-100"
+            class="text-foreground cursor-pointer p-1 opacity-70 transition-all hover:opacity-100"
             title="Rename"
             @click="startRename"
          >
@@ -102,15 +104,19 @@ async function disband() {
          </button>
          <button
             type="button"
-            class="text-foreground/70 hover:text-destructive cursor-pointer p-1"
+            class="text-destructive cursor-pointer p-1 opacity-70 transition-all hover:opacity-100"
             title="Ungroup"
             @click="disband"
          >
-            <PhArrowsOut :size="20" weight="fill" color="#ff6b6b" />
+            <PhArrowsOut :size="20" weight="fill" />
          </button>
       </div>
 
-      <ul v-if="isExpanded" class="mt-2 flex flex-col gap-1.5 border-t border-white/10 pt-2.5">
+      <ul
+         v-if="isExpanded"
+         v-auto-animate
+         class="mt-2 flex flex-col gap-1.5 border-t border-white/10 pt-2.5"
+      >
          <li
             v-for="member in group.members"
             :key="member.modId"

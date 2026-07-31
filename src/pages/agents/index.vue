@@ -46,25 +46,33 @@ const selectedRank = ref('');
 const selectedAttribute = ref('');
 const selectedSpeciality = ref('');
 const modCounts = ref(new Map<number, { total: number; enabled: number }>());
+// Gates the grid until the first load + sort has settled. The agents store persists across
+// navigations, so without this the grid renders stale cards for a frame — and the late-arriving
+// modCounts can re-sort them — making v-auto-animate play on every page enter.
+const isLoading = ref(true);
 
 const router = useRouter();
 
 onMounted(async () => {
-   await agentsStore.fetchAll();
-   const allMods = await invoke<Mod[]>('list_mods', {
-      agentId: null,
-      categoryId: null,
-      categoryItemId: null,
-   });
-   const counts = new Map<number, { total: number; enabled: number }>();
-   for (const mod of allMods) {
-      if (mod.agentId === null) continue;
-      const entry = counts.get(mod.agentId) ?? { total: 0, enabled: 0 };
-      entry.total += 1;
-      if (mod.isEnabled) entry.enabled += 1;
-      counts.set(mod.agentId, entry);
+   try {
+      await agentsStore.fetchAll();
+      const allMods = await invoke<Mod[]>('list_mods', {
+         agentId: null,
+         categoryId: null,
+         categoryItemId: null,
+      });
+      const counts = new Map<number, { total: number; enabled: number }>();
+      for (const mod of allMods) {
+         if (mod.agentId === null) continue;
+         const entry = counts.get(mod.agentId) ?? { total: 0, enabled: 0 };
+         entry.total += 1;
+         if (mod.isEnabled) entry.enabled += 1;
+         counts.set(mod.agentId, entry);
+      }
+      modCounts.value = counts;
+   } finally {
+      isLoading.value = false;
    }
-   modCounts.value = counts;
 });
 
 watch(sortOption, (value) => localStorage.setItem(SORT_STORAGE_KEY, value));
@@ -200,21 +208,23 @@ const visibleAgents = computed(() => {
          </div>
       </div>
 
-      <div v-if="visibleAgents.length === 0" class="flex flex-1 items-center justify-center">
-         <img src="/images/no-data.png" class="w-50" />
-      </div>
-      <div
-         v-else
-         class="grid gap-6 pb-6"
-         style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))"
-      >
-         <AgentCard
-            v-for="agent in visibleAgents"
-            :key="agent.slug"
-            :agent="agent"
-            :total-mods="countOf(agent).total"
-            :enabled-mods="countOf(agent).enabled"
-         />
-      </div>
+      <template v-if="!isLoading">
+         <div v-if="visibleAgents.length === 0" class="flex flex-1 items-center justify-center">
+            <img src="/images/no-data.png" class="w-50" />
+         </div>
+         <div
+            v-else
+            class="grid gap-6 pb-6"
+            style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))"
+         >
+            <AgentCard
+               v-for="agent in visibleAgents"
+               :key="agent.slug"
+               :agent="agent"
+               :total-mods="countOf(agent).total"
+               :enabled-mods="countOf(agent).enabled"
+            />
+         </div>
+      </template>
    </div>
 </template>

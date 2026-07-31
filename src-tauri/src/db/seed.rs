@@ -260,3 +260,75 @@ fn sync_categories(tx: &Transaction, defs: &Definitions) -> Result<(), String> {
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rusqlite::Connection;
+
+    fn setup() -> Connection {
+        let conn = Connection::open_in_memory().unwrap();
+        conn.execute_batch(crate::db::schema::SCHEMA).unwrap();
+        conn
+    }
+
+    /// A user may add a custom agent (e.g. "Astra") before it exists as a built-in one — slugify()
+    /// is deterministic, so a later-added base agent with the same name shares that same slug, and
+    /// the ON CONFLICT(slug) upsert merges into the same row rather than creating a duplicate. The
+    /// alias insert is additive-only ("INSERT OR IGNORE", never a DELETE), so the user's own alias
+    /// survives right alongside whatever alias the base definition itself declares.
+    #[test]
+    fn merges_custom_agent_into_newly_added_base_agent_keeping_aliases() {
+        let mut conn = setup();
+
+        conn.execute("INSERT INTO agents (name, slug, is_builtin) VALUES ('Astra', 'astra', 0)", [])
+            .unwrap();
+        let custom_id = conn.last_insert_rowid();
+        conn.execute(
+            "INSERT INTO agent_aliases (agent_id, alias) VALUES (?1, 'my-custom-alias')",
+            params![custom_id],
+        )
+        .unwrap();
+
+        let defs = vec![AgentDefinition {
+            name: "Astra".to_string(),
+            slug: "astra".to_string(),
+            details: Some(r#"{"rank":"S"}"#.to_string()),
+            base_image: Some("astra_base.jpg".to_string()),
+            aliases: vec!["astra".to_string()],
+        }];
+
+        let tx = conn.transaction().unwrap();
+        sync_agents(&tx, &defs).expect("sync should succeed");
+        tx.commit().unwrap();
+
+        let (id, name, is_builtin, details, base_image): (i64, String, i64, Option<String>, Option<String>) = conn
+            .query_row(
+                "SELECT id, name, is_builtin, details, base_image FROM agents WHERE slug = 'astra'",
+                [],
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?)),
+            )
+            .unwrap();
+
+        assert_eq!(id, custom_id, "should merge into the existing row, not create a second one");
+        assert_eq!(name, "Astra");
+        assert_eq!(is_builtin, 1, "should become a built-in agent");
+        assert_eq!(details.as_deref(), Some(r#"{"rank":"S"}"#));
+        assert_eq!(base_image.as_deref(), Some("astra_base.jpg"));
+
+        let aliases: Vec<String> = {
+            let mut stmt = conn
+                .prepare("SELECT alias FROM agent_aliases WHERE agent_id = ?1 ORDER BY alias")
+                .unwrap();
+            stmt.query_map(params![custom_id], |row| row.get(0))
+                .unwrap()
+                .collect::<Result<_, _>>()
+                .unwrap()
+        };
+        assert_eq!(
+            aliases,
+            vec!["astra".to_string(), "my-custom-alias".to_string()],
+            "user's own alias must survive, and the base definition's own alias gets added too"
+        );
+    }
+}

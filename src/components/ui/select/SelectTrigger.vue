@@ -69,7 +69,7 @@ const iconColor = computed(() => {
             v-if="clearable && hasValue && !disabled && !loading"
             type="button"
             aria-label="Clear"
-            class="cursor-pointer transition-opacity hover:opacity-70"
+            class="cursor-pointer transition-all hover:opacity-70"
             @click.stop="emits('clear')"
          >
             <PhX :size="18" weight="bold" color="var(--color-muted-foreground, #6b7280)" />

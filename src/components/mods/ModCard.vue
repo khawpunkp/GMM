@@ -52,12 +52,13 @@ function openFolder() {
 
 <template>
    <VueCard
-      class="relative flex flex-col gap-3 p-4 transition-opacity"
+      class="relative flex flex-col gap-4 p-4 transition-all"
       :class="[
          !mod.isEnabled && 'opacity-50',
          selectMode && selected && 'outline-primary outline-2',
       ]"
       @click="selectMode && emit('toggle-select', mod)"
+      v-auto-animate
    >
       <VueCheckbox
          v-if="selectMode"
@@ -89,7 +90,7 @@ function openFolder() {
          />
          <button
             type="button"
-            class="text-foreground/70 cursor-pointer p-1 transition-opacity hover:opacity-100"
+            class="text-foreground cursor-pointer p-1 opacity-70 transition-all hover:opacity-100"
             title="Edit"
             @click="emit('edit', mod)"
          >
@@ -97,7 +98,7 @@ function openFolder() {
          </button>
          <button
             type="button"
-            class="text-foreground/70 cursor-pointer p-1 transition-opacity hover:opacity-100"
+            class="text-foreground cursor-pointer p-1 opacity-70 transition-all hover:opacity-100"
             title="Open folder"
             @click="openFolder"
          >
@@ -105,7 +106,7 @@ function openFolder() {
          </button>
          <button
             type="button"
-            class="text-foreground/70 cursor-pointer p-1 transition-opacity hover:opacity-100"
+            class="text-foreground cursor-pointer p-1 opacity-70 transition-all hover:opacity-100"
             title="Keybinds"
             @click="emit('keybinds', mod)"
          >
@@ -113,11 +114,11 @@ function openFolder() {
          </button>
          <button
             type="button"
-            class="text-foreground/70 hover:text-destructive cursor-pointer p-1 transition-opacity"
+            class="text-destructive cursor-pointer p-1 opacity-70 transition-all hover:opacity-100"
             title="Delete"
             @click="emit('delete', mod)"
          >
-            <PhTrash :size="20" weight="fill" color="#ff6b6b" />
+            <PhTrash :size="20" weight="fill" />
          </button>
       </div>
    </VueCard>

@@ -150,7 +150,7 @@ function handleSubmit() {
 
       <div class="mb-4.5 flex flex-col gap-2">
          <Label>Aliases</Label>
-         <div class="mb-2.5 flex flex-wrap gap-2">
+         <div v-auto-animate class="mb-2.5 flex flex-wrap gap-2">
             <span
                v-for="alias in aliases"
                :key="alias"
