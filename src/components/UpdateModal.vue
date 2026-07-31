@@ -30,31 +30,33 @@ async function handleRestart() {
 <template>
    <div class="fixed inset-0 z-100 flex items-center justify-center bg-black/60">
       <div
-         class="bg-card max-h-[85vh] w-11/12 max-w-120 overflow-y-auto rounded-lg border border-white/10 p-6"
+         class="bg-card flex max-h-[85vh] w-11/12 max-w-120 flex-col gap-4 overflow-y-auto rounded-lg border border-white/10 p-6"
       >
-         <VueTypography variant="TitleB" as="h2" class="mb-2.5">
-            Update Available: v{{ updaterStore.update?.version }}
-         </VueTypography>
-         <VueTypography variant="CaptionR" as="p" class="text-muted-foreground mb-4">
-            Currently running v{{ updaterStore.update?.currentVersion }}
-         </VueTypography>
+         <div>
+            <VueTypography variant="TitleB" as="h2">
+               Update Available: {{ updaterStore.update?.version }}
+            </VueTypography>
+            <VueTypography variant="CaptionR" as="p" class="text-muted-foreground">
+               Currently running version:{{ updaterStore.update?.currentVersion }}
+            </VueTypography>
+         </div>
          <VueTypography
             v-if="updaterStore.update?.body"
             variant="CaptionR"
             as="p"
-            class="text-foreground/70 mb-5 max-h-50 overflow-y-auto whitespace-pre-wrap"
+            class="text-foreground/70 max-h-50 overflow-y-auto whitespace-pre-wrap"
          >
             {{ updaterStore.update.body }}
          </VueTypography>
 
-         <div v-if="updaterStore.isDownloading" class="my-2.5">
+         <div v-if="updaterStore.isDownloading">
             <div class="h-2 w-full overflow-hidden rounded-full bg-white/10">
                <div
                   class="bg-primary h-full transition-all"
                   :style="{ width: (progressPercent ?? 0) + '%' }"
                ></div>
             </div>
-            <VueTypography variant="CaptionR" as="p" class="text-muted-foreground mt-3.5">
+            <VueTypography variant="CaptionR" as="p" class="text-muted-foreground">
                {{ progressPercent !== null ? `${progressPercent}%` : 'Downloading…' }}
             </VueTypography>
          </div>
@@ -63,12 +65,12 @@ async function handleRestart() {
             v-if="updaterStore.errorMessage"
             variant="CaptionR"
             as="p"
-            class="text-destructive mt-3.5"
+            class="text-destructive"
          >
             {{ updaterStore.errorMessage }}
          </VueTypography>
 
-         <div class="mt-2.5 flex items-center justify-end gap-3">
+         <div class="flex items-center justify-end gap-3">
             <VueButton
                v-if="updaterStore.isReadyToRestart"
                type="button"

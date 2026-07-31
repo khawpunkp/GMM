@@ -162,7 +162,7 @@ function handleSubmit() {
          <div class="flex flex-1 flex-col items-start gap-4">
             <VueTypography variant="H1B" as="h2">{{ name }}</VueTypography>
             <div v-if="statRows.length > 0" class="flex flex-wrap gap-4">
-               <div v-for="stat in statRows" :key="stat.label" class="flex flex-col gap-1.5">
+               <div v-for="stat in statRows" :key="stat.label" class="flex flex-col gap-2">
                   <div class="bg-background/50 flex items-center gap-2 rounded-lg px-3 py-2">
                      <img v-if="stat.icon" :src="stat.icon" alt="" class="size-6 object-contain" />
                      <VueTypography v-if="stat.label !== 'Rank'" variant="BodyR" as="span">
@@ -204,7 +204,7 @@ function handleSubmit() {
       </div>
 
       <form v-else @submit.prevent="handleSubmit" class="flex gap-6">
-         <div class="mb-5 flex h-full w-60 flex-col items-center gap-4">
+         <div class="flex h-full w-60 flex-col items-center gap-4">
             <img
                :src="resolveAgentImageSrc(baseImage)"
                alt=""
@@ -253,11 +253,11 @@ function handleSubmit() {
 
             <div class="flex flex-col gap-2" v-auto-animate>
                <Label>Aliases</Label>
-               <div v-if="aliases.length > 0" v-auto-animate class="mb-2.5 flex flex-wrap gap-2">
+               <div v-if="aliases.length > 0" v-auto-animate class="flex flex-wrap gap-2">
                   <span
                      v-for="alias in aliases"
                      :key="alias"
-                     class="bg-primary/15 flex items-center gap-1.5 rounded-full py-1 pr-1.5 pl-3 text-sm"
+                     class="bg-primary/15 flex items-center gap-2 rounded-full px-2 py-1 pl-3 text-sm"
                   >
                      {{ alias }}
                      <button
@@ -287,7 +287,7 @@ function handleSubmit() {
                </div>
             </div>
 
-            <div class="mt-auto flex items-center justify-end gap-4">
+            <div class="mt-auto flex w-full items-center justify-end gap-4">
                <VueButton
                   v-if="initialAgent"
                   type="button"

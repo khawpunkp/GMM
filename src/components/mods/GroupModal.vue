@@ -112,7 +112,7 @@ async function handleSubmit() {
          class="bg-card max-h-[85vh] w-11/12 max-w-120 overflow-y-auto rounded-lg border border-white/10 p-6"
          @submit.prevent="handleSubmit"
       >
-         <VueTypography variant="TitleB" as="h2" class="mb-2.5">
+         <VueTypography variant="TitleB" as="h2" class="mb-2">
             {{ isEditing ? 'Edit Group' : 'New Group' }}
          </VueTypography>
 
@@ -127,11 +127,11 @@ async function handleSubmit() {
             </VueButton>
          </div>
 
-         <VueInput id="group-name" v-model="name" label="Name" container-class="mb-4.5" required />
+         <VueInput id="group-name" v-model="name" label="Name" container-class="mb-4" required />
 
-         <div v-if="isEditing" class="mb-4.5 flex flex-col gap-2">
+         <div v-if="isEditing" class="mb-4 flex flex-col gap-2">
             <Label>Mods in this group ({{ members.length }})</Label>
-            <ul v-auto-animate class="flex flex-col gap-1.5">
+            <ul v-auto-animate class="flex flex-col gap-2">
                <li
                   v-for="member in members"
                   :key="member.modId"
@@ -153,7 +153,7 @@ async function handleSubmit() {
             </VueTypography>
          </div>
 
-         <div v-if="isEditing && addableMods.length > 0" class="mb-4.5 flex items-end gap-2">
+         <div v-if="isEditing && addableMods.length > 0" class="mb-4 flex items-end gap-2">
             <VueSelect
                v-model="pendingModId"
                label="Add a mod"
@@ -172,7 +172,7 @@ async function handleSubmit() {
             {{ errorMessage }}
          </VueTypography>
 
-         <div class="mt-2.5 flex items-center justify-end gap-3">
+         <div class="mt-2 flex items-center justify-end gap-3">
             <VueButton type="button" variant="outlined" class="min-w-32" @click="emit('close')">
                Cancel
             </VueButton>

@@ -63,7 +63,7 @@ function openFolder() {
       <VueCheckbox
          v-if="selectMode"
          :model-value="selected"
-         class="absolute top-2.5 left-2.5 z-10"
+         class="absolute top-2 left-2 z-10"
       />
       <img
          :src="imageSrc ?? '/images/no-data.png'"
@@ -76,7 +76,7 @@ function openFolder() {
             v-if="mod.author"
             variant="CaptionR"
             as="div"
-            class="text-muted-foreground mt-0.5"
+            class="text-muted-foreground mt-1"
          >
             by {{ mod.author }}
          </VueTypography>

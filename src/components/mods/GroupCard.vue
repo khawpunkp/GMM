@@ -60,7 +60,7 @@ async function disband() {
          <VueTypography variant="BodyB" as="span" class="grow">
             {{ group.name }}
          </VueTypography>
-         <span class="bg-accent text-background rounded-full px-2 py-0.5 text-[11px] font-semibold">
+         <span class="bg-accent text-background rounded-full px-2 py-1 text-[11px] font-semibold">
             {{ group.members.length }}
          </span>
       </div>
@@ -93,7 +93,7 @@ async function disband() {
       <ul
          v-if="isExpanded"
          v-auto-animate
-         class="mt-2 flex flex-col gap-1.5 border-t border-white/10 pt-2.5"
+         class="mt-2 flex flex-col gap-2 border-t border-white/10 pt-3"
       >
          <li
             v-for="member in group.members"

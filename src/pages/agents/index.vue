@@ -144,7 +144,7 @@ const visibleAgents = computed(() => {
                   v-for="rank in RANKS"
                   :key="rank.key"
                   type="button"
-                  class="inline-flex size-9 items-center justify-center rounded-full border border-white/5 bg-white/5 p-1.5 transition-colors"
+                  class="inline-flex size-9 items-center justify-center rounded-full border border-white/5 bg-white/5 p-2 transition-colors"
                   :class="
                      selectedRank === rank.key
                         ? 'border-white/40 bg-white/10'
@@ -161,7 +161,7 @@ const visibleAgents = computed(() => {
                   v-for="attribute in ATTRIBUTES"
                   :key="attribute.key"
                   type="button"
-                  class="inline-flex size-9 items-center justify-center rounded-full border border-white/5 bg-white/5 p-1.5 transition-colors"
+                  class="inline-flex size-9 items-center justify-center rounded-full border border-white/5 bg-white/5 p-2 transition-colors"
                   :class="
                      selectedAttribute === attribute.key
                         ? 'border-white/40 bg-white/10'
@@ -178,7 +178,7 @@ const visibleAgents = computed(() => {
                   v-for="speciality in SPECIALITIES"
                   :key="speciality.key"
                   type="button"
-                  class="inline-flex size-9 items-center justify-center rounded-full border border-white/5 bg-white/5 p-1.5 transition-colors"
+                  class="inline-flex size-9 items-center justify-center rounded-full border border-white/5 bg-white/5 p-2 transition-colors"
                   :class="
                      selectedSpeciality === speciality.key
                         ? 'border-white/40 bg-white/10'

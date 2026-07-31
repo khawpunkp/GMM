@@ -105,7 +105,7 @@ function handleSubmit() {
          class="bg-card max-h-[85vh] w-11/12 max-w-120 overflow-y-auto rounded-lg border border-white/10 p-6"
          @submit.prevent="handleSubmit"
       >
-         <VueTypography variant="TitleB" as="h2" class="mb-2.5">Edit Mod</VueTypography>
+         <VueTypography variant="TitleB" as="h2" class="mb-2">Edit Mod</VueTypography>
 
          <div class="mb-5 flex flex-col items-center gap-4">
             <img
@@ -118,17 +118,11 @@ function handleSubmit() {
             </VueButton>
          </div>
 
-         <VueInput
-            id="mod-name"
-            v-model="form.name"
-            label="Name"
-            container-class="mb-4.5"
-            required
-         />
+         <VueInput id="mod-name" v-model="form.name" label="Name" container-class="mb-4" required />
 
-         <VueInput id="mod-author" v-model="form.author" label="Author" container-class="mb-4.5" />
+         <VueInput id="mod-author" v-model="form.author" label="Author" container-class="mb-4" />
 
-         <div class="mb-4.5">
+         <div class="mb-4">
             <VueSelect
                v-model="selectedTarget"
                label="Category"
@@ -138,13 +132,11 @@ function handleSubmit() {
             />
          </div>
 
-         <div class="mt-2.5 flex items-center justify-end gap-3">
+         <div class="mt-2 flex items-center justify-end gap-3">
             <VueButton type="button" variant="outlined" @click="emit('close')" class="min-w-32">
                Cancel
             </VueButton>
-            <VueButton type="submit" class="min-w-32" :disabled="!form.name.trim()">
-               Save
-            </VueButton>
+            <VueButton type="submit" class="min-w-32" :disabled="!form.name.trim()">Save</VueButton>
          </div>
       </form>
    </div>

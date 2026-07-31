@@ -180,7 +180,7 @@ async function runScan() {
             v-if="launchError"
             variant="CaptionR"
             as="p"
-            class="text-destructive mt-2 mb-2.5"
+            class="text-destructive mt-2 mb-2"
          >
             {{ launchError }}
          </VueTypography>
@@ -204,7 +204,7 @@ async function runScan() {
                type="button"
                variant="ghost"
                color="gray"
-               class="w-full justify-start gap-3 rounded-lg px-3.5 py-3"
+               class="w-full justify-start gap-3 rounded-lg px-4 py-3"
                :class="isActive(item.to) ? 'bg-primary text-white' : 'hover:bg-primary/10'"
                @click="router.push(item.to)"
                :disabled="!modsFolderPath || !gameExecutablePath"

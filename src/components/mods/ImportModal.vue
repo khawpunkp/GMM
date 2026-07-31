@@ -107,14 +107,14 @@ async function handleImport() {
       <div
          class="bg-card max-h-[85vh] w-11/12 max-w-120 overflow-y-auto rounded-lg border border-white/10 p-6"
       >
-         <VueTypography variant="TitleB" as="h2" class="mb-2.5">Import Mod</VueTypography>
+         <VueTypography variant="TitleB" as="h2" class="mb-2">Import Mod</VueTypography>
 
          <form @submit.prevent="handleImport">
             <VueTypography variant="CaptionR" as="p" class="text-muted-foreground mb-4 break-all">
                {{ archivePath }}
             </VueTypography>
 
-            <div v-if="!hasFixedTarget" class="mb-4.5">
+            <div v-if="!hasFixedTarget" class="mb-4">
                <VueSelect
                   v-model="pickedTarget"
                   label="Import into"
@@ -124,7 +124,7 @@ async function handleImport() {
                />
             </div>
 
-            <div v-if="likelyRoots.length > 1" class="mb-4.5">
+            <div v-if="likelyRoots.length > 1" class="mb-4">
                <VueSelect
                   v-model="form.selectedRoot"
                   label="Which folder is the mod?"
@@ -136,14 +136,14 @@ async function handleImport() {
                id="import-name"
                v-model="form.modName"
                label="Name"
-               container-class="mb-4.5"
+               container-class="mb-4"
                required
             />
             <VueInput
                id="import-author"
                v-model="form.author"
                label="Author"
-               container-class="mb-4.5"
+               container-class="mb-4"
             />
 
             <VueTypography
@@ -161,7 +161,9 @@ async function handleImport() {
                </VueButton>
                <VueButton
                   type="submit"
-                  :disabled="isImporting || !form.modName.trim() || (!hasFixedTarget && !pickedTarget)"
+                  :disabled="
+                     isImporting || !form.modName.trim() || (!hasFixedTarget && !pickedTarget)
+                  "
                   class="min-w-32"
                >
                   {{ isImporting ? 'Importing…' : 'Import' }}

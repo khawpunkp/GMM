@@ -29,7 +29,7 @@ onMounted(async () => {
       <div
          class="bg-card max-h-[85vh] w-11/12 max-w-120 overflow-y-auto rounded-lg border border-white/10 p-6"
       >
-         <VueTypography variant="TitleB" as="h2" class="mb-2.5">Keybinds</VueTypography>
+         <VueTypography variant="TitleB" as="h2" class="mb-2">Keybinds</VueTypography>
 
          <template v-if="errorMessage">
             <VueTypography variant="CaptionR" as="p" class="text-destructive">
@@ -41,14 +41,14 @@ onMounted(async () => {
                <img src="/images/no-data.png" class="w-50" />
             </div>
 
-            <ul v-else v-auto-animate class="mt-2.5 mb-5 flex flex-col gap-2">
+            <ul v-else v-auto-animate class="mt-2 mb-5 flex flex-col gap-2">
                <li
                   v-for="kb in keybinds"
                   :key="kb.title"
                   class="flex items-center justify-between rounded-md bg-white/5 px-3 py-2 text-[13px]"
                >
                   <span>{{ kb.title }}</span>
-                  <span class="rounded bg-black/30 px-2 py-0.5 font-mono">
+                  <span class="rounded bg-black/30 px-2 py-1 font-mono">
                      {{ formatKeybind(kb.key) }}
                   </span>
                </li>

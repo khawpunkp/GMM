@@ -64,7 +64,7 @@ const buttonVariants = cva(baseStyle, {
       size: {
          default: 'h-12 text-[14px] font-[600]',
          sm: 'h-[28px] px-2 text-[14px] font-[400]',
-         xs: 'h-6 px-3.5 text-[14px] font-[300]',
+         xs: 'h-6 px-4 text-[14px] font-[300]',
          custom: '',
       },
       disabled: {
