@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS agents (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     name        TEXT NOT NULL,
     slug        TEXT UNIQUE NOT NULL,
-    description TEXT,
     details     TEXT,
     base_image  TEXT,
     is_builtin  INTEGER NOT NULL DEFAULT 0
@@ -42,7 +41,6 @@ CREATE TABLE IF NOT EXISTS mods (
     category_id       INTEGER,
     category_item_id  INTEGER,
     name              TEXT NOT NULL,
-    description       TEXT,
     folder_name       TEXT NOT NULL UNIQUE,
     image_filename    TEXT,
     author            TEXT,

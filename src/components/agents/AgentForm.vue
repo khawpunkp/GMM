@@ -44,7 +44,6 @@ const attributeSelectOptions = toSelectOptions(ATTRIBUTE_OPTIONS);
 const specialitySelectOptions = toSelectOptions(SPECIALITY_OPTIONS);
 
 const name = ref(props.initialAgent?.name ?? '');
-const description = ref(props.initialAgent?.description ?? '');
 const baseImage = ref<string | null>(props.initialAgent?.baseImage ?? null);
 const aliases = reactive<string[]>([...(props.initialAgent?.aliases ?? [])]);
 const aliasInput = ref('');
@@ -67,7 +66,6 @@ watch(
    (agent) => {
       if (!agent) return;
       name.value = agent.name;
-      description.value = agent.description ?? '';
       baseImage.value = agent.baseImage;
       aliases.splice(0, aliases.length, ...agent.aliases);
       Object.assign(details, parseAgentDetails(agent.details));
@@ -109,7 +107,6 @@ async function pickImage() {
 function handleSubmit() {
    emit('submit', {
       name: name.value.trim(),
-      description: description.value.trim() || null,
       details: serializeAgentDetails(details),
       baseImage: baseImage.value,
       aliases: [...aliases],
@@ -134,16 +131,6 @@ function handleSubmit() {
       </div>
 
       <VueInput id="agent-name" v-model="name" label="Name" container-class="mb-4.5" required />
-
-      <div class="mb-4.5 flex flex-col gap-2">
-         <Label for="agent-description">Description</Label>
-         <textarea
-            id="agent-description"
-            v-model="description"
-            rows="3"
-            class="text-foreground focus:border-primary rounded-2xl border border-white/10 bg-white/5 px-4 py-3 transition-all outline-none"
-         ></textarea>
-      </div>
 
       <div class="mb-4.5 flex flex-wrap gap-4">
          <VueSelect

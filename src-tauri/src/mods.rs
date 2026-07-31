@@ -10,7 +10,7 @@ use crate::scanner::deduce::DISABLED_PREFIX;
 
 const MOD_PREVIEW_BASENAME: &str = "mod_preview";
 
-const MOD_COLUMNS: &str = "m.id, m.agent_id, m.category_id, m.category_item_id, m.name, m.description, \
+const MOD_COLUMNS: &str = "m.id, m.agent_id, m.category_id, m.category_item_id, m.name, \
      m.folder_name, m.image_filename, m.author, mgm.group_id";
 const MOD_FROM: &str = "mods m LEFT JOIN mod_group_members mgm ON mgm.mod_id = m.id";
 
@@ -77,12 +77,11 @@ fn row_to_mod(row: &rusqlite::Row) -> rusqlite::Result<ModWithState> {
         category_id: row.get(2)?,
         category_item_id: row.get(3)?,
         name: row.get(4)?,
-        description: row.get(5)?,
-        folder_name: row.get(6)?,
-        image_filename: row.get(7)?,
-        author: row.get(8)?,
+        folder_name: row.get(5)?,
+        image_filename: row.get(6)?,
+        author: row.get(7)?,
         is_enabled: false,
-        group_id: row.get(9)?,
+        group_id: row.get(8)?,
     })
 }
 
@@ -182,12 +181,12 @@ pub fn update_mod(
 
     match &new_image_filename {
         Some(filename) => conn.execute(
-            "UPDATE mods SET name = ?1, description = ?2, author = ?3, image_filename = ?4 WHERE id = ?5",
-            params![input.name, input.description, input.author, filename, mod_id],
+            "UPDATE mods SET name = ?1, author = ?2, image_filename = ?3 WHERE id = ?4",
+            params![input.name, input.author, filename, mod_id],
         ),
         None => conn.execute(
-            "UPDATE mods SET name = ?1, description = ?2, author = ?3 WHERE id = ?4",
-            params![input.name, input.description, input.author, mod_id],
+            "UPDATE mods SET name = ?1, author = ?2 WHERE id = ?3",
+            params![input.name, input.author, mod_id],
         ),
     }
     .map_err(|e| e.to_string())?;

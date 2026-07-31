@@ -33,7 +33,7 @@ async function handleRestart() {
       @click.self="handleClose"
    >
       <div
-         class="bg-card max-h-[85vh] w-11/12 max-w-120 overflow-y-auto rounded-2xl border border-white/10 p-6"
+         class="bg-card max-h-[85vh] w-11/12 max-w-120 overflow-y-auto rounded-lg border border-white/10 p-6"
       >
          <VueTypography variant="TitleB" as="h2" class="mb-2.5">
             Update Available: v{{ updaterStore.update?.version }}

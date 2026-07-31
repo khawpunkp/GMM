@@ -206,13 +206,12 @@ fn find_ini_path(dir: &Path) -> Option<PathBuf> {
 struct IniHints {
     name: Option<String>,
     author: Option<String>,
-    description: Option<String>,
     target: Option<String>,
     r#type: Option<String>,
 }
 
 fn parse_ini_hints(ini_content: &str) -> IniHints {
-    let mut hints = IniHints { name: None, author: None, description: None, target: None, r#type: None };
+    let mut hints = IniHints { name: None, author: None, target: None, r#type: None };
     if let Ok(ini) = Ini::load_from_str(ini_content) {
         for section_name in ["Mod", "Settings", "Info", "General"] {
             if let Some(section) = ini.section(Some(section_name)) {
@@ -221,9 +220,6 @@ fn parse_ini_hints(ini_content: &str) -> IniHints {
                 }
                 if let Some(author) = section.get("Author") {
                     hints.author = Some(author.trim().to_string());
-                }
-                if let Some(desc) = section.get("Description") {
-                    hints.description = Some(desc.trim().to_string());
                 }
                 if let Some(target) = section.get("Target").or_else(|| section.get("Entity")).or_else(|| section.get("Character")) {
                     hints.target = Some(target.trim().to_string());
@@ -243,7 +239,6 @@ pub struct DeducedModInfo {
     pub category_id: Option<i64>,
     pub category_item_id: Option<i64>,
     pub name: String,
-    pub description: Option<String>,
     pub author: Option<String>,
     pub image_filename: Option<String>,
 }
@@ -261,7 +256,6 @@ pub fn deduce_mod_info(mod_folder_path: &Path, base_mods_path: &Path, maps: &Ded
         category_id: None,
         category_item_id: None,
         name: mod_folder_name.clone(),
-        description: None,
         author: None,
         image_filename: find_preview_image(mod_folder_path),
     };
@@ -294,7 +288,6 @@ pub fn deduce_mod_info(mod_folder_path: &Path, base_mods_path: &Path, maps: &Ded
                 info.name = name;
             }
             info.author = hints.author;
-            info.description = hints.description;
             ini_target_hint = hints.target;
             ini_type_hint = hints.r#type;
         }

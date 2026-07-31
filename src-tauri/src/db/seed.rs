@@ -11,7 +11,6 @@ const SETTINGS_KEY_APP_VERSION: &str = "app_version";
 struct AgentDefinition {
     name: String,
     slug: String,
-    description: Option<String>,
     details: Option<String>,
     base_image: Option<String>,
     #[serde(default)]
@@ -118,15 +117,14 @@ fn sync_agents(tx: &Transaction, defs: &[AgentDefinition]) -> Result<(), String>
         seed_slugs.insert(def.slug.clone());
 
         tx.execute(
-            "INSERT INTO agents (name, slug, description, details, base_image, is_builtin)
-             VALUES (?1, ?2, ?3, ?4, ?5, 1)
+            "INSERT INTO agents (name, slug, details, base_image, is_builtin)
+             VALUES (?1, ?2, ?3, ?4, 1)
              ON CONFLICT(slug) DO UPDATE SET
                 name = excluded.name,
-                description = excluded.description,
                 details = excluded.details,
                 base_image = excluded.base_image,
                 is_builtin = 1",
-            params![def.name, def.slug, def.description, def.details, def.base_image],
+            params![def.name, def.slug, def.details, def.base_image],
         )
         .map_err(|e| e.to_string())?;
 

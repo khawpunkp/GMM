@@ -4,7 +4,6 @@ import { open } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
 import VueButton from '@/components/ui/button/VueButton.vue';
 import VueInput from '@/components/ui/input/VueInput.vue';
-import Label from '@/components/ui/input/Label.vue';
 import { VueSelect } from '@/components/ui/select';
 import VueTypography from '@/components/ui/typography/VueTypography.vue';
 import { useAgentsStore } from '../../stores/agents';
@@ -23,7 +22,6 @@ const categoriesStore = useCategoriesStore();
 
 const form = reactive({
    name: props.mod.name,
-   description: props.mod.description ?? '',
    author: props.mod.author ?? '',
 });
 const imageDataUrl = ref<string | null>(null);
@@ -70,7 +68,6 @@ async function pickImage() {
 function handleSubmit() {
    emit('submit', {
       name: form.name.trim(),
-      description: form.description.trim() || null,
       author: form.author.trim() || null,
       imageDataUrl: imageDataUrl.value,
    });
@@ -99,11 +96,11 @@ async function handleMove() {
       >
          <VueTypography variant="TitleB" as="h2" class="mb-2.5">Edit Mod</VueTypography>
 
-         <div class="mb-5 flex items-center gap-4">
+         <div class="mb-5 flex flex-col items-center gap-4">
             <img
                :src="imageDataUrl ?? '/images/placeholder.jpg'"
                alt=""
-               class="size-20 rounded-2xl border border-white/10 object-cover"
+               class="aspect-video w-full rounded-2xl border border-white/10 object-cover"
             />
             <VueButton type="button" variant="outlined" size="sm" @click="pickImage">
                Choose New Image
@@ -117,16 +114,6 @@ async function handleMove() {
             container-class="mb-4.5"
             required
          />
-
-         <div class="mb-4.5 flex flex-col gap-2">
-            <Label for="mod-description">Description</Label>
-            <textarea
-               id="mod-description"
-               v-model="form.description"
-               rows="3"
-               class="text-foreground focus:border-primary rounded-2xl border border-white/10 bg-white/5 px-4 py-3 transition-all outline-none"
-            ></textarea>
-         </div>
 
          <VueInput id="mod-author" v-model="form.author" label="Author" container-class="mb-4.5" />
 

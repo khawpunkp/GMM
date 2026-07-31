@@ -3,7 +3,6 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import VueButton from '@/components/ui/button/VueButton.vue';
 import VueInput from '@/components/ui/input/VueInput.vue';
-import Label from '@/components/ui/input/Label.vue';
 import { VueSelect } from '@/components/ui/select';
 import VueTypography from '@/components/ui/typography/VueTypography.vue';
 import { useAgentsStore } from '../../stores/agents';
@@ -60,7 +59,6 @@ const rootOptions = computed(() =>
 
 const form = reactive({
    modName: props.analysis.deducedName ?? fallbackNameFromPath(props.archivePath),
-   description: '',
    author: props.analysis.deducedAuthor ?? '',
    selectedRoot: likelyRoots.value[0]?.path ?? '',
 });
@@ -92,7 +90,6 @@ async function handleImport() {
                : null,
          selectedInternalRoot: form.selectedRoot || null,
          modName: form.modName.trim(),
-         description: form.description.trim() || null,
          author: form.author.trim() || null,
       };
       await invoke('import_archive', { request });
@@ -144,15 +141,6 @@ async function handleImport() {
                container-class="mb-4.5"
                required
             />
-            <div class="mb-4.5 flex flex-col gap-2">
-               <Label for="import-description">Description</Label>
-               <textarea
-                  id="import-description"
-                  v-model="form.description"
-                  rows="3"
-                  class="text-foreground focus:border-primary rounded-2xl border border-white/10 bg-white/5 px-4 py-3 transition-all outline-none"
-               ></textarea>
-            </div>
             <VueInput
                id="import-author"
                v-model="form.author"

@@ -54,7 +54,6 @@ pub struct ImportArchiveRequest {
     pub category_item_id: Option<i64>,
     pub selected_internal_root: Option<String>,
     pub mod_name: String,
-    pub description: Option<String>,
     pub author: Option<String>,
 }
 
@@ -79,7 +78,6 @@ pub fn import_archive(request: ImportArchiveRequest, state: State<DbState>) -> R
             category_item_id: request.category_item_id,
             selected_internal_root: request.selected_internal_root,
             mod_name: request.mod_name,
-            description: request.description,
             author: request.author,
         },
     )

@@ -116,14 +116,13 @@ pub fn run_scan(
         if existing_id.is_none() {
             let deduced = deduce_mod_info(&current_path, base_mods_path, &maps);
             let insert_result = conn.execute(
-                "INSERT INTO mods (agent_id, category_id, category_item_id, name, description, folder_name, image_filename, author)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+                "INSERT INTO mods (agent_id, category_id, category_item_id, name, folder_name, image_filename, author)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
                 params![
                     deduced.agent_id,
                     deduced.category_id,
                     deduced.category_item_id,
                     deduced.name,
-                    deduced.description,
                     clean_relative_path_str,
                     deduced.image_filename,
                     deduced.author,

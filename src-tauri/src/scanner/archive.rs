@@ -43,7 +43,6 @@ pub struct ImportRequest {
     pub category_item_id: Option<i64>,
     pub selected_internal_root: Option<String>,
     pub mod_name: String,
-    pub description: Option<String>,
     pub author: Option<String>,
 }
 
@@ -411,14 +410,13 @@ pub fn import(
     }
 
     let insert_result = conn.execute(
-        "INSERT INTO mods (agent_id, category_id, category_item_id, name, description, folder_name, image_filename, author)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+        "INSERT INTO mods (agent_id, category_id, category_item_id, name, folder_name, image_filename, author)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
         params![
             request.agent_id,
             request.category_id,
             resolved_item_id,
             request.mod_name.trim(),
-            request.description,
             relative_path_str,
             image_filename,
             request.author,

@@ -2,7 +2,6 @@ export interface Agent {
    id: number;
    name: string;
    slug: string;
-   description: string | null;
    details: string | null;
    baseImage: string | null;
    isBuiltin: boolean;
@@ -19,7 +18,6 @@ export interface AgentDetails {
 
 export interface AgentInput {
    name: string;
-   description: string | null;
    details: string | null;
    baseImage: string | null;
    aliases: string[];
@@ -37,7 +35,6 @@ export interface Mod {
    categoryId: number | null;
    categoryItemId: number | null;
    name: string;
-   description: string | null;
    folderName: string;
    imageFilename: string | null;
    author: string | null;
@@ -47,7 +44,6 @@ export interface Mod {
 
 export interface ModInput {
    name: string;
-   description: string | null;
    author: string | null;
    imageDataUrl: string | null;
 }
@@ -90,7 +86,6 @@ export interface ImportArchiveRequest {
    categoryItemId: number | null;
    selectedInternalRoot: string | null;
    modName: string;
-   description: string | null;
    author: string | null;
 }
 
