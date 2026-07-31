@@ -55,7 +55,12 @@ const specialityIcon = computed(() =>
          >
             <img
                :src="resolveAgentImageSrc(agent.baseImage)"
-               class="absolute top-0 left-0 size-full object-cover"
+               class="absolute"
+               :class="[
+                  agent.baseImage
+                     ? 'top-0 left-0 size-full object-cover'
+                     : 'top-1/2 left-1/2 size-40 -translate-x-1/2 -translate-y-1/2 object-contain',
+               ]"
             />
             <img
                v-if="specialityIcon"
@@ -73,6 +78,8 @@ const specialityIcon = computed(() =>
          <div class="-mt-4 h-10 rounded-b-lg" :style="{ backgroundColor: barColor }" />
 
          <div class="flex grow flex-col justify-center p-4 text-center">
+            {{ agent.baseImage }}
+
             <VueTypography variant="BodyB" as="span">{{ agent.name }}</VueTypography>
          </div>
       </VueCard>

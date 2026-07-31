@@ -1,7 +1,7 @@
 import type { AgentDetails } from '../types';
 
 export function resolveAgentImageSrc(baseImage: string | null): string {
-   if (!baseImage) return '/images/placeholder.jpg';
+   if (!baseImage) return '/images/entities/anonymous.webp';
    if (baseImage.startsWith('data:')) return baseImage;
    return `/images/entities/${baseImage}`;
 }
