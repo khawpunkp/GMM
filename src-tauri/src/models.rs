@@ -62,16 +62,6 @@ pub struct KeybindInfo {
     pub key: String,
 }
 
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct PersistVar {
-    pub name: String,
-    pub value: i64,
-    /// The cycle range from a matching `[Key...]` section, if one references this var. Empty if
-    /// no `[Key...]` section cycles it (shown as a raw number field in the UI in that case).
-    pub options: Vec<i64>,
-}
-
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ModGroupMember {

@@ -1,59 +1,27 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import VueButton from '@/components/ui/button/VueButton.vue';
-import VueInput from '@/components/ui/input/VueInput.vue';
-import Label from '@/components/ui/input/Label.vue';
-import { VueSelect } from '@/components/ui/select';
 import VueTypography from '@/components/ui/typography/VueTypography.vue';
 import { formatKeybind } from '../../utils/keybind';
-import type { KeybindInfo, PersistVar } from '../../types';
+import type { KeybindInfo } from '../../types';
 
 const props = defineProps<{ modId: number }>();
 const emit = defineEmits<{ close: [] }>();
 
 const keybinds = ref<KeybindInfo[]>([]);
-const persistVars = ref<PersistVar[]>([]);
-const isGameRunning = ref(false);
 const isLoading = ref(true);
 const errorMessage = ref<string | null>(null);
 
-const savingVars = reactive<Record<string, boolean>>({});
-const varErrors = reactive<Record<string, string>>({});
-
 onMounted(async () => {
    try {
-      const [kb, pv, running] = await Promise.all([
-         invoke<KeybindInfo[]>('get_mod_keybinds', { modId: props.modId }),
-         invoke<PersistVar[]>('get_mod_persist_vars', { modId: props.modId }),
-         invoke<boolean>('is_game_running'),
-      ]);
-      keybinds.value = kb;
-      persistVars.value = pv;
-      isGameRunning.value = running;
+      keybinds.value = await invoke<KeybindInfo[]>('get_mod_keybinds', { modId: props.modId });
    } catch (e) {
       errorMessage.value = String(e);
    } finally {
       isLoading.value = false;
    }
 });
-
-async function saveVar(varName: string, rawValue: string) {
-   const value = Number(rawValue);
-   if (!Number.isInteger(value)) return;
-
-   savingVars[varName] = true;
-   varErrors[varName] = '';
-   try {
-      await invoke('set_mod_persist_var', { modId: props.modId, varName, value });
-      const target = persistVars.value.find((v) => v.name === varName);
-      if (target) target.value = value;
-   } catch (e) {
-      varErrors[varName] = String(e);
-   } finally {
-      savingVars[varName] = false;
-   }
-}
 </script>
 
 <template>
@@ -69,15 +37,10 @@ async function saveVar(varName: string, rawValue: string) {
             </VueTypography>
          </template>
          <template v-else>
-            <VueTypography
-               v-if="keybinds.length === 0"
-               variant="CaptionR"
-               as="p"
-               class="text-muted-foreground"
-            >
-               No keybinds found — this mod's INI has no "; Constants" section, or none of its
-               [Key...] sections have a value set yet.
-            </VueTypography>
+            <div v-if="keybinds.length === 0" class="flex flex-1 items-center justify-center">
+               <img src="/images/no-data.png" class="w-50" />
+            </div>
+
             <ul v-else class="mt-2.5 mb-5 flex flex-col gap-2">
                <li
                   v-for="kb in keybinds"
@@ -85,54 +48,11 @@ async function saveVar(varName: string, rawValue: string) {
                   class="flex items-center justify-between rounded-md bg-white/5 px-3 py-2 text-[13px]"
                >
                   <span>{{ kb.title }}</span>
-                  <span class="rounded bg-black/30 px-2 py-0.5 font-mono">{{ formatKeybind(kb.key) }}</span>
+                  <span class="rounded bg-black/30 px-2 py-0.5 font-mono">
+                     {{ formatKeybind(kb.key) }}
+                  </span>
                </li>
             </ul>
-
-            <template v-if="persistVars.length > 0">
-               <VueTypography variant="TitleB" as="h2" class="mb-2.5">Toggle memory</VueTypography>
-               <VueTypography
-                  v-if="isGameRunning"
-                  variant="CaptionR"
-                  as="p"
-                  class="text-muted-foreground mb-4"
-               >
-                  The game is running, so these reflect whatever the game last set — close the game
-                  to edit them here.
-               </VueTypography>
-               <div v-for="pv in persistVars" :key="pv.name" class="mb-4.5">
-                  <template v-if="isGameRunning">
-                     <Label>{{ pv.name }}</Label>
-                     <VueTypography variant="BodyR" as="p" class="mt-1">{{ pv.value }}</VueTypography>
-                  </template>
-                  <VueSelect
-                     v-else-if="pv.options.length > 0"
-                     :model-value="pv.value"
-                     :label="pv.name"
-                     :options="pv.options.map((opt) => ({ label: String(opt), value: opt }))"
-                     :disabled="savingVars[pv.name]"
-                     @update:model-value="(value) => saveVar(pv.name, String(value))"
-                  />
-                  <template v-else>
-                     <Label :for="`persist-${pv.name}`">{{ pv.name }}</Label>
-                     <VueInput
-                        :id="`persist-${pv.name}`"
-                        type="number"
-                        :model-value="pv.value"
-                        :disabled="savingVars[pv.name]"
-                        @change="saveVar(pv.name, ($event.target as HTMLInputElement).value)"
-                     />
-                  </template>
-                  <VueTypography
-                     v-if="varErrors[pv.name]"
-                     variant="CaptionR"
-                     as="p"
-                     class="text-destructive mt-1.5"
-                  >
-                     {{ varErrors[pv.name] }}
-                  </VueTypography>
-               </div>
-            </template>
          </template>
 
          <div class="flex items-center justify-end">
