@@ -120,7 +120,7 @@ async function handleSubmit() {
             <img
                :src="baseImage ?? '/images/no-data.png'"
                alt=""
-               class="aspect-video w-full rounded-lg border border-white/10 object-cover"
+               class="bg-foreground aspect-video w-full rounded-lg border border-white/10 object-cover"
             />
             <VueButton type="button" variant="outlined" size="sm" @click="pickImage">
                {{ baseImage ? 'Choose Different Image' : 'Choose Image' }}

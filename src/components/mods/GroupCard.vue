@@ -43,7 +43,7 @@ async function disband() {
       <img
          :src="group.baseImage ?? '/images/no-data.png'"
          alt=""
-         class="aspect-video w-full rounded-sm"
+         class="bg-foreground aspect-video w-full rounded-sm"
          :class="group.baseImage ? 'object-cover' : 'object-contain'"
       />
       <div class="flex items-center gap-2">

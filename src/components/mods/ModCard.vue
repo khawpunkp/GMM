@@ -66,9 +66,9 @@ function openFolder() {
          class="absolute top-2.5 left-2.5 z-10"
       />
       <img
-         :src="imageSrc ?? '/images/placeholder.jpg'"
+         :src="imageSrc ?? '/images/no-data.png'"
          alt=""
-         class="aspect-video w-full rounded-sm object-cover"
+         class="bg-foreground aspect-video w-full rounded-sm object-cover"
       />
       <div class="flex-1">
          <VueTypography variant="BodyB">{{ mod.name }}</VueTypography>
