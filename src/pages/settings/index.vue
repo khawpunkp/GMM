@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue';
 import { open } from '@tauri-apps/plugin-dialog';
 import { getVersion } from '@tauri-apps/api/app';
-import { PhGear } from '@phosphor-icons/vue';
+import { PhGear, PhWarning } from '@phosphor-icons/vue';
 import VueButton from '@/components/ui/button/VueButton.vue';
 import VueTypography from '@/components/ui/typography/VueTypography.vue';
 import { useSettingsStore } from '../../stores/settings';
@@ -71,7 +71,10 @@ async function checkForUpdates() {
             </VueTypography>
 
             <div class="mb-5 grid grid-cols-12 items-center border-b border-white/5 pb-5">
-               <VueTypography variant="BodyB" as="h3" class="col-span-2">Mods Folder</VueTypography>
+               <VueTypography variant="BodyB" as="h3" class="col-span-2 flex items-center gap-2">
+                  <PhWarning v-if="!modsFolderPath" :size="24" weight="fill" class="text-accent" />
+                  Mods Folder
+               </VueTypography>
                <VueTypography
                   variant="BodyR"
                   as="p"
@@ -85,7 +88,13 @@ async function checkForUpdates() {
             </div>
 
             <div class="grid grid-cols-12 items-center">
-               <VueTypography variant="BodyB" as="h3" class="col-span-2">
+               <VueTypography variant="BodyB" as="h3" class="col-span-2 flex items-center gap-2">
+                  <PhWarning
+                     v-if="!gameExecutablePath"
+                     :size="24"
+                     weight="fill"
+                     class="text-accent"
+                  />
                   Game Executable
                </VueTypography>
                <VueTypography

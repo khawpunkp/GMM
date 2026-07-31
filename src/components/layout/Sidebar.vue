@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { open } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
@@ -41,8 +41,11 @@ function isActive(path: string) {
    return route.path === path || route.path.startsWith(path + '/');
 }
 
-const gameExecutablePath = ref<string | null>(null);
-const modsFolderPath = ref<string | null>(null);
+// Read straight off the store rather than snapshotting into local refs: the Settings page writes
+// through `settingsStore.set`, so a copy taken at mount would go stale — leaving the nav disabled
+// (and the user stranded on Settings) even after they'd filled both paths in.
+const gameExecutablePath = computed(() => settingsStore.settings.game_executable_path ?? null);
+const modsFolderPath = computed(() => settingsStore.settings.mods_folder_path ?? null);
 const isLaunching = ref(false);
 const launchError = ref<string | null>(null);
 const isImporting = ref(false);
@@ -61,8 +64,11 @@ let unlistenComplete: UnlistenFn | null = null;
 let unlistenError: UnlistenFn | null = null;
 
 onMounted(async () => {
-   gameExecutablePath.value = await settingsStore.fetch('game_executable_path');
-   modsFolderPath.value = await settingsStore.fetch('mods_folder_path');
+   // Populates the store the computeds above read from.
+   await Promise.all([
+      settingsStore.fetch('game_executable_path'),
+      settingsStore.fetch('mods_folder_path'),
+   ]);
 
    unlistenProgress = await listen<{ message: string }>('scan-progress', (event) => {
       scanMessage.value = event.payload.message;
@@ -182,7 +188,7 @@ async function runScan() {
          <VueButton
             variant="outlined"
             class="mt-4 w-full justify-center"
-            :disabled="isAnalyzingImport"
+            :disabled="isAnalyzingImport || !modsFolderPath || !gameExecutablePath"
             @click="startImport"
          >
             <PhFileArrowDown :size="24" weight="fill" />
@@ -201,6 +207,7 @@ async function runScan() {
                class="w-full justify-start gap-3 rounded-lg px-3.5 py-3"
                :class="isActive(item.to) ? 'bg-primary text-white' : 'hover:bg-primary/10'"
                @click="router.push(item.to)"
+               :disabled="!modsFolderPath || !gameExecutablePath"
             >
                <component :is="item.icon" :size="24" weight="fill" />
                {{ item.label }}
