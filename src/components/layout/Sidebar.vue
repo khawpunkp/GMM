@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { open } from '@tauri-apps/plugin-dialog';
 import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+import type { ArchiveAnalysis } from '../../types';
 import {
    PhUsers,
    PhGear,
@@ -44,6 +46,10 @@ const modsFolderPath = ref<string | null>(null);
 const isLaunching = ref(false);
 const launchError = ref<string | null>(null);
 const isImporting = ref(false);
+const isAnalyzingImport = ref(false);
+const importArchivePath = ref<string | null>(null);
+const importAnalysis = ref<ArchiveAnalysis | null>(null);
+const importError = ref<string | null>(null);
 const openFolderError = ref<string | null>(null);
 const isScanning = ref(false);
 const scanMessage = ref<string | null>(null);
@@ -91,6 +97,34 @@ async function launchGame() {
    }
 }
 
+async function startImport() {
+   importError.value = null;
+   const path = await open({
+      multiple: false,
+      filters: [{ name: 'Mod archive', extensions: ['zip', '7z', 'rar'] }],
+   });
+   if (typeof path !== 'string') return;
+
+   isAnalyzingImport.value = true;
+   try {
+      importAnalysis.value = await invoke<ArchiveAnalysis>('analyze_archive', {
+         archivePath: path,
+      });
+      importArchivePath.value = path;
+      isImporting.value = true;
+   } catch (e) {
+      importError.value = String(e);
+   } finally {
+      isAnalyzingImport.value = false;
+   }
+}
+
+function closeImport() {
+   isImporting.value = false;
+   importArchivePath.value = null;
+   importAnalysis.value = null;
+}
+
 async function openModsFolder() {
    openFolderError.value = null;
    try {
@@ -123,9 +157,7 @@ async function runScan() {
 </script>
 
 <template>
-   <aside
-      class="bg-card flex h-full max-w-65 shrink-0 grow flex-col overflow-y-auto border-r border-white/10 p-5"
-   >
+   <aside class="bg-card flex h-full max-w-65 shrink-0 grow flex-col overflow-y-auto p-5">
       <div class="mb-8 flex items-center justify-center">
          <img src="/images/logo.webp" class="w-6/10" />
       </div>
@@ -150,11 +182,15 @@ async function runScan() {
          <VueButton
             variant="outlined"
             class="mt-4 w-full justify-center"
-            @click="isImporting = true"
+            :disabled="isAnalyzingImport"
+            @click="startImport"
          >
             <PhFileArrowDown :size="24" weight="fill" />
-            Import Mod
+            {{ isAnalyzingImport ? 'Analyzing…' : 'Import Mod' }}
          </VueButton>
+         <VueTypography v-if="importError" variant="CaptionR" as="p" class="text-destructive mt-2">
+            {{ importError }}
+         </VueTypography>
       </div>
       <ul class="mt-4 grow list-none border-b border-white/10 pb-2">
          <li v-for="item in navItems" :key="item.to" class="mb-2">
@@ -195,9 +231,11 @@ async function runScan() {
       </VueButton>
 
       <ImportModal
-         v-if="isImporting"
-         @imported="isImporting = false"
-         @close="isImporting = false"
+         v-if="isImporting && importArchivePath && importAnalysis"
+         :archive-path="importArchivePath"
+         :analysis="importAnalysis"
+         @imported="closeImport"
+         @close="closeImport"
       />
 
       <div

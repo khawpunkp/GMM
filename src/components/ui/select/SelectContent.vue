@@ -35,7 +35,10 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
       v-bind="{ ...forwarded, ...$attrs }"
       :class="
         cn(
-          'content-shadow relative z-50 flex max-h-65 w-[calc(100dvw-48px)] max-w-75 flex-col overflow-x-hidden rounded-lg bg-card text-foreground border border-white/10',
+          'content-shadow relative z-[110] flex max-h-65 flex-col overflow-x-hidden rounded-lg bg-card text-foreground border border-white/10',
+          position === 'popper'
+            ? 'w-[var(--reka-select-trigger-width)]'
+            : 'w-[calc(100dvw-48px)] max-w-75',
           'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
           'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
           'data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2',

@@ -1541,7 +1541,7 @@ checksum = "a8d1add55171497b4705a648c6b583acafb01d58050a51727785f0b2c8e0a2b2"
 
 [[package]]
 name = "gmm"
-version = "3.0.8"
+version = "1.0.0"
 dependencies = [
  "base64 0.22.1",
  "lazy_static",
